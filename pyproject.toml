@@ -1,0 +1,26 @@
+[project]
+name = "code-assist"
+version = "0.1.0"
+description = "Intelligent code review assistant with deterministic linting, OWASP-aware reasoning, and agent orchestration"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.1.0",
+    "fastapi[standard]>=0.141.1",
+    "google-adk>=2.8.0",
+    "google-genai>=1.30.0",
+    "httpx>=0.28.1",
+    "orjson>=3.12.0",
+    "pydantic-settings>=2.15.0",
+    "python-certifi-win32>=1.6.1",
+    "python-dotenv>=1.2.3",
+    "ruff>=0.12.0",
+    "truststore>=0.10.4",
+    "uvicorn[standard]>=0.52.4",
+]
+
+[project.scripts]
+code-assist = "backend.app.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

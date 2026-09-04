@@ -1,0 +1,106 @@
+{
+  "review_id": "7f9c2d1a7b44",
+  "language": "python",
+  "source": "snippet",
+  "owasp_context": [
+    "Broken Access Control",
+    "Cryptographic Failures",
+    "Injection",
+    "Insecure Design",
+    "Security Misconfiguration",
+    "Vulnerable and Outdated Components",
+    "Identification and Authentication Failures",
+    "Software and Data Integrity Failures",
+    "Security Logging and Monitoring Failures",
+    "Server-Side Request Forgery (SSRF)"
+  ],
+  "summary": "The deterministic checks found risky patterns related to unsafe execution and secret handling. The review should require remediation before merge.",
+  "total_findings": 3,
+  "findings": [
+    {
+      "line": 11,
+      "severity": "major",
+      "severity_label": "Major / Required",
+      "pr_blocking": true,
+      "comment_prefix": "### **[Major / Required] (Major)**",
+      "rule_id": "SEC001",
+      "category": "security",
+      "message": "Suspicious call detected: subprocess.run",
+      "recommendation": "Validate the command input and consider restricting subprocess access.",
+      "evidence": "subprocess.run"
+    },
+    {
+      "line": 22,
+      "severity": "critical",
+      "severity_label": "Critical / Blocker",
+      "pr_blocking": true,
+      "comment_prefix": "### **[Critical / Blocker] (Critical)**",
+      "rule_id": "SEC002",
+      "category": "security",
+      "message": "Sensitive value assigned in code.",
+      "recommendation": "Load secrets from environment variables or a secret manager instead of hardcoding them.",
+      "evidence": "api_key"
+    },
+    {
+      "line": 37,
+      "severity": "minor",
+      "severity_label": "Minor / Suggestion",
+      "pr_blocking": false,
+      "comment_prefix": "### **[Minor / Suggestion] (Minor)**",
+      "rule_id": "PY002",
+      "category": "quality",
+      "message": "Use of assert is not recommended in production code.",
+      "recommendation": "Replace assert statements with explicit validation and exceptions.",
+      "evidence": "assert"
+    }
+  ],
+  "dag_events": [
+    {
+      "node": "repo_loader",
+      "event": "started",
+      "timestamp": "2026-09-04T04:00:00Z",
+      "payload": {
+        "repo_path": null,
+        "language": "python"
+      }
+    },
+    {
+      "node": "static_analysis",
+      "event": "ast_parsed",
+      "timestamp": "2026-09-04T04:00:01Z",
+      "payload": {
+        "source_length": 512
+      }
+    },
+    {
+      "node": "deterministic_gate",
+      "event": "passed",
+      "timestamp": "2026-09-04T04:00:02Z",
+      "payload": {
+        "finding_count": 3
+      }
+    },
+    {
+      "node": "review_reasoner",
+      "event": "issues_ranked",
+      "timestamp": "2026-09-04T04:00:03Z",
+      "payload": {
+        "count": 3
+      }
+    },
+    {
+      "node": "review_reasoner",
+      "event": "recommendations_generated",
+      "timestamp": "2026-09-04T04:00:04Z",
+      "payload": {
+        "summary": "The deterministic checks found risky patterns and quality issues."
+      }
+    }
+  ],
+  "memory": {
+    "review_id": "7f9c2d1a7b44",
+    "messages": 2,
+    "last_role": "assistant",
+    "last_content_preview": "The deterministic checks found risky patterns and quality issues. The highest-priority items are related to unsafe execution, secret handling, and code quality gates."
+  }
+}
