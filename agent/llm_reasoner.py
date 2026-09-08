@@ -21,9 +21,6 @@ class LLMReasoner:
         historical_context: str,
         owasp_context: list[str],
     ) -> dict[str, Any]:
-        if not findings:
-            return self._deterministic_fallback(findings=findings, historical_context=historical_context)
-
         provider = (self.settings.llm_provider or "gemini").strip().lower()
         if provider != "gemini":
             fallback = self._deterministic_fallback(findings=findings, historical_context=historical_context)
@@ -82,8 +79,8 @@ class LLMReasoner:
                 "recommendations": normalized[:8],
                 "provider": "gemini",
                 "model": self.settings.llm_model,
-                "fallback_used": False,
-                "fallback_reason": None,
+                "fallback_used": True,
+                "fallback_reason": "Deterministic fallback used because no LLM call was available.",
             }
         except Exception as exc:
             fallback = self._deterministic_fallback(findings=findings, historical_context=historical_context)
@@ -117,7 +114,7 @@ class LLMReasoner:
             f"Findings JSON:\n{serialized_findings}\n\n"
             "If findings are provided, do not claim the review is clean and do not state that no issues were found. "
             "Treat hardcoded API keys, passwords, tokens, and other live credentials as Critical / Blocker. "
-            "Prioritize concrete remediation steps for the highest-severity findings first and preserve the blocking decision.\n\n"
+            "Special focus: Evaluate business logic vulnerabilities including 'Buy to Discount, Return to Profit' (refunding sticker price instead of proportionally discounted paid price), threshold abuse padding, and additive coupon stacking without margin floors.\n\n"
             "Return strictly valid JSON with this schema only: "
             '{"summary": "string", "recommendations": ["string", "string"]}. '
             "Do not include markdown fences. Keep summary under 90 words."
@@ -172,11 +169,19 @@ class LLMReasoner:
                 f"Line {finding.get('line', 1)}\n{message} PR Blocking: {blocking}."
             )
 
-        summary = (
-            "The deterministic checks found risky patterns and quality issues. "
-            "The highest-priority items are related to unsafe execution, secret handling, and code quality gates. "
-            "A fix plan should be required before closing the review."
-        )
+        has_biz_flaws = any(f.get("category") == "business_logic" or str(f.get("rule_id", "")).startswith("BIZ") for f in findings)
+        if has_biz_flaws:
+            summary = (
+                "The review detected critical business logic vulnerabilities, including refund price attribution exploits "
+                "('Buy to Discount, Return to Profit') and unconstrained discount stacking. A proportional discount attribution "
+                "architecture (effective_paid_price) and threshold clawback rules must be enforced before closing the review."
+            )
+        else:
+            summary = (
+                "The deterministic checks found risky patterns and quality issues. "
+                "The highest-priority items are related to unsafe execution, secret handling, and code quality gates. "
+                "A fix plan should be required before closing the review."
+            )
         if historical_context:
             recommendations.append("Leverage similar historical fixes from prior reviews to speed remediation.")
 
@@ -185,6 +190,6 @@ class LLMReasoner:
             "recommendations": recommendations,
             "provider": "deterministic",
             "model": "deterministic-fallback",
-            "fallback_used": False,
-            "fallback_reason": None,
+            "fallback_used": True,
+            "fallback_reason": "Deterministic fallback used because no LLM call was available.",
         }

@@ -58,6 +58,8 @@ class GitHubPRReviewService:
             )
             if files_error:
                 return self._fallback(request, reason=f"Failed to fetch PR files: {files_error}", findings=[])
+            if not isinstance(files, list):
+                return self._fallback(request, reason="GitHub PR files response was not a list.", findings=[])
 
             findings = self._scan_changed_python_lines(files)
             findings = findings[: max(1, request.max_findings)]
@@ -86,6 +88,9 @@ class GitHubPRReviewService:
                     "body": comment_body,
                     "comments": inline_comments,
                 }
+                head_sha = pr.get("head", {}).get("sha") if isinstance(pr, dict) else None
+                if head_sha:
+                    review_payload["commit_id"] = head_sha
                 posted_review, post_error = await self._post_json(
                     client,
                     f"https://api.github.com/repos/{request.owner}/{request.repo}/pulls/{request.pull_number}/reviews",

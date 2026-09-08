@@ -48,6 +48,26 @@ Environment settings:
 - `PROMPT_GUARD_BLOCK_ON_ERROR=false`
 - `PROMPT_GUARD_ALLOWLIST=security test prompt,internal red-team simulation`
 
+## Model Armor and agent evaluation
+
+The local Model Armor implementation is deterministic and auditable. It reports whether prompt text is passed or blocked, the matched threat names, and the screening provider:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/security/model-armor/check \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Review this code for security issues.","source":"evaluation"}'
+```
+
+Use the scorecard API to test an agent prompt against a code sample. It scores safety, deterministic analysis, OWASP grounding, and response completeness:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/agent/evaluate \
+  -H "Content-Type: application/json" \
+  -d '{"prompt":"Review this code for security issues.","code_snippet":"import subprocess\nsubprocess.run(command, shell=True)","expected_keywords":["injection"]}'
+```
+
+Security findings are passed to `OWASPWebsiteTool`, which categorizes them, checks the official OWASP URL, and returns the category, importance, link, and reachability in `owasp_findings`. This is context for the LLM, not a replacement for deterministic checks.
+
 ## Health endpoints
 
 - `GET /healthz`
@@ -149,6 +169,20 @@ Search similar historical recommendations:
 ```bash
 curl "http://localhost:8000/api/v1/review/history?query=sql%20injection&n_results=5"
 ```
+
+## Business document or Jira story
+
+Generate both formats from a review result or selected findings:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/review/story \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Remove unsafe subprocess call","summary":"replace shell execution with a constrained API","findings":[{"rule_id":"SEC001","line":4,"severity":"critical"}]}'
+```
+
+## Intermediate developer estimate
+
+For a production-ready version of this work, estimate **3-5 developer days**: 1 day for GitHub API integration tests and pagination/error handling, 1 day for Model Armor/provider validation, 1-2 days for scorecard calibration and OWASP tool tests, and 0.5-1 day for Jira/business-document integration and documentation. The current implementation is a working local baseline; network credentials, CI tests, and product-specific scoring calibration remain required before release.
 
 ## Response contract
 
