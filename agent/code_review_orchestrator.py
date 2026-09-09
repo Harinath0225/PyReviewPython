@@ -55,11 +55,32 @@ class CodeReviewOrchestrator:
             stream.emit("ruff", "scan_completed", {"mode": "repository"})
             stream.emit("tool_calls", "repository_scanner_completed", {"tool": "gather_repo_findings", "finding_count": len(findings)})
         elif code_snippet:
+            import tempfile
+            from pathlib import Path
+            from agent.review_tools import run_ruff_scan
+            
             stream.emit("tool_calls", "python_ast_scanner_started", {"tool": "scan_python_source"})
             stream.emit("static_analysis", "ast_parsed", {"source_length": len(code_snippet)})
             findings.extend(scan_python_source(code_snippet))
             stream.emit("static_analysis", "ast_completed", {"mode": "snippet"})
-            stream.emit("ruff", "scan_skipped", {"reason": "Ruff runs on file paths; snippet review used AST scanner only."})
+            
+            # Run Ruff on snippet via temp file
+            tmp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as tmp_file:
+                    tmp_file.write(code_snippet)
+                    tmp_path = tmp_file.name
+                
+                stream.emit("ruff", "scan_started", {"mode": "snippet", "temp_file": tmp_path})
+                ruff_findings = run_ruff_scan(tmp_path)
+                findings.extend(ruff_findings)
+                stream.emit("ruff", "scan_completed", {"mode": "snippet", "finding_count": len(ruff_findings)})
+            except Exception as exc:
+                stream.emit("ruff", "scan_failed", {"mode": "snippet", "error": str(exc)})
+            finally:
+                if tmp_path and Path(tmp_path).exists():
+                    Path(tmp_path).unlink()
+            
             stream.emit("repo_loader", "completed", {"source": "snippet"})
             stream.emit("tool_calls", "python_ast_scanner_completed", {"tool": "scan_python_source", "finding_count": len(findings)})
 

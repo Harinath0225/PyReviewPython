@@ -6,12 +6,24 @@ import httpx
 
 
 _OWASP = {
-    "SEC001": ("A03:2021 Injection", "https://owasp.org/Top10/A03_2021-Injection/"),
-    "SEC003": ("A03:2021 Injection", "https://owasp.org/Top10/A03_2021-Injection/"),
-    "SEC002": ("A02:2021 Cryptographic Failures", "https://owasp.org/Top10/A02_2021-Cryptographic_Failures/"),
-    "SSR": ("A10:2021 Server-Side Request Forgery", "https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/"),
+    "SEC001": (
+        "A05:2025 Injection",
+        "https://owasp.org/Top10/2025/A05_2025-Injection/",
+    ),
+    "SEC002": (
+        "A04:2025 Cryptographic Failures",
+        "https://owasp.org/Top10/2025/A04_2025-Cryptographic_Failures/",
+    ),
+    "SEC003": (
+        "A05:2025 Injection",
+        "https://owasp.org/Top10/2025/A05_2025-Injection/",
+    ),
+    "SSR": (
+        "A01:2025 Broken Access Control",
+        "https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/",
+    ),
 }
-_DEFAULT = ("A05:2021 Security Misconfiguration", "https://owasp.org/Top10/A05_2021-Security_Misconfiguration/")
+_DEFAULT = ("A05:2025 Security Misconfiguration", "https://owasp.org/Top10/2025/A05_2025-Security_Misconfiguration/")
 
 
 class OWASPWebsiteTool:

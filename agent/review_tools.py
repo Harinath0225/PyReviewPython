@@ -89,31 +89,56 @@ def _python_ast_issues(source: str) -> list[dict[str, Any]]:
                 })
 
     sql_fstring_variables: set[str] = set()
+    sql_injection_issues: list[dict[str, Any]] = []
+    
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign) and isinstance(node.value, ast.JoinedStr):
             target_names = [target.id for target in node.targets if isinstance(target, ast.Name)]
             sql_text = "".join(item.value for item in node.value.values if isinstance(item, ast.Constant)).lower()
-            if any(keyword in sql_text for keyword in ("select ", "insert ", "update ", "delete ")):
+            has_sql_keyword = any(keyword in sql_text for keyword in ("select ", "insert ", "update ", "delete "))
+            
+            # Check if f-string has interpolation (FormattedValue nodes = {} parts)
+            has_interpolation = any(isinstance(item, ast.FormattedValue) for item in node.value.values)
+            
+            if has_sql_keyword:
                 sql_fstring_variables.update(target_names)
+                
+                # NEW: Flag SQL f-strings with interpolation directly (don't need execute() call)
+                if has_interpolation:
+                    sql_injection_issues.append({
+                        "line": getattr(node, "lineno", 1),
+                        "severity": "critical",
+                        "rule_id": "SEC003",
+                        "category": "security",
+                        "message": "SQL query is built with string formatting or interpolation.",
+                        "recommendation": "Use parameterized SQL queries and pass user values as bound parameters instead of interpolating them into SQL syntax.",
+                        "evidence": "SQL f-string with variable interpolation",
+                        "replacement": (
+                            "query = \"SELECT * FROM users WHERE id = ?\"\n"
+                            "cursor.execute(query, (user_id,))"
+                        ),
+                    })
 
         if isinstance(node, ast.Call) and _call_name(node.func).split(".")[-1] in {"execute", "executemany"}:
             query_argument = node.args[0] if node.args else None
             is_formatted_sql = isinstance(query_argument, ast.JoinedStr)
             is_tainted_sql = isinstance(query_argument, ast.Name) and query_argument.id in sql_fstring_variables
             if is_formatted_sql or is_tainted_sql:
-                issues.append({
+                sql_injection_issues.append({
                     "line": getattr(node, "lineno", 1),
                     "severity": "critical",
                     "rule_id": "SEC003",
                     "category": "security",
                     "message": "SQL query is built with string formatting or interpolation.",
                     "recommendation": "Use parameterized SQL queries and pass user values as bound parameters instead of interpolating them into SQL syntax.",
-                    "evidence": "SQL interpolation",
+                    "evidence": "SQL interpolation in execute() call",
                     "replacement": (
                         "query = \"SELECT * FROM users WHERE username = ? AND password = ?\"\n"
                         "cursor.execute(query, (username, password))"
                     ),
                 })
+    
+    issues.extend(sql_injection_issues)
 
     for node in ast.walk(tree):
         if isinstance(node, ast.Assign):
@@ -365,7 +390,7 @@ def run_ruff_scan(file_path: str | os.PathLike[str]) -> list[dict[str, Any]]:
                 for item in payload:
                     result.append({
                         "line": int(item.get("location", {}).get("row", 1)),
-                        "severity": _normalize_severity(item.get("severity")),
+                        "severity": _normalize_severity(item.get("severity"), item.get("code"), item.get("message")),
                         "rule_id": item.get("code", "RUF"),
                         "category": "lint",
                         "message": item.get("message", "Lint issue"),
@@ -384,14 +409,142 @@ def scan_python_source(source: str) -> list[dict[str, Any]]:
     return [_with_severity_policy(finding) for finding in _python_ast_issues(source)]
 
 
-def _normalize_severity(value: object) -> str:
-    severity = str(value or "info").lower()
-    aliases = {"error": "critical", "high": "critical", "warning": "major", "medium": "major", "low": "minor"}
-    return aliases.get(severity, severity if severity in _SEVERITY_POLICY else "info")
+def _normalize_severity(
+    value: object,
+    code: object | None = None,
+    message: object | None = None,
+    category: object | None = None,
+) -> str:
+    """
+    Normalize severity without treating every Ruff error as Critical.
 
+    Security findings are classified separately from normal lint findings.
+    """
+
+    severity = str(value or "info").lower()
+    code_name = str(code or "").upper()
+    message_text = str(message or "").lower()
+    category_name = str(category or "").lower()
+
+    # ---------------------------------------------------------
+    # 1. Explicit security rules from our AST/security scanner
+    # ---------------------------------------------------------
+    security_critical_rules = {
+        "SEC003",  # SQL injection
+        "SEC002",  # Hardcoded secret
+        "SEC001",  # Dangerous calls
+    }
+
+    if code_name in security_critical_rules:
+        return "critical"
+
+    # ---------------------------------------------------------
+    # 2. Security indicators from scanner messages
+    # ---------------------------------------------------------
+    critical_security_markers = (
+        "sql injection",
+        "command injection",
+        "remote code execution",
+        "code execution",
+        "hardcoded secret",
+        "hardcoded password",
+        "unsafe deserialization",
+        "pickle.loads",
+        "eval(",
+        "exec(",
+    )
+
+    if any(marker in message_text for marker in critical_security_markers):
+        return "critical"
+
+    # ---------------------------------------------------------
+    # 3. Other security findings
+    # ---------------------------------------------------------
+    security_markers = (
+        "security",
+        "unsafe",
+        "subprocess",
+        "deserial",
+        "shell",
+        "path traversal",
+        "yaml.load",
+        "ssrf",
+    )
+
+    if category_name == "security" or any(
+        marker in message_text for marker in security_markers
+    ):
+        return "major"
+
+    # ---------------------------------------------------------
+    # 4. Ruff / normal lint findings
+    # ---------------------------------------------------------
+    # IMPORTANT:
+    # Ruff "error" does NOT mean Critical.
+    #
+    # Examples:
+    # F401 = unused import
+    # F841 = unused variable
+    # E501 = line too long
+    # These should generally remain Minor.
+    # ---------------------------------------------------------
+
+    ruff_minor_rules = {
+        "F401",  # unused import
+        "F841",  # local variable assigned but never used
+        "E501",  # line too long
+        "E302",  # expected 2 blank lines
+        "E305",  # expected 2 blank lines after class/function
+        "W291",  # trailing whitespace
+        "W292",  # no newline at end of file
+        "W293",  # whitespace on blank line
+        "UP",    # pyupgrade
+        "SIM",   # simplify
+        "N",     # naming
+        "ANN",   # annotations
+        "D",     # documentation
+    }
+
+    # Handle prefixes such as UP, SIM, etc.
+    if (
+        code_name in ruff_minor_rules
+        or any(code_name.startswith(prefix) for prefix in ruff_minor_rules)
+    ):
+        return "minor"
+
+    # Ruff correctness issues can be more important than style.
+    ruff_major_rules = {
+        "F821",  # undefined name
+        "F811",  # redefined while unused
+        "F822",  # undefined export
+    }
+
+    if code_name in ruff_major_rules:
+        return "major"
+
+    # ---------------------------------------------------------
+    # 5. Generic severity fallback
+    # ---------------------------------------------------------
+    severity_map = {
+        "error": "major",
+        "warning": "minor",
+        "high": "major",
+        "medium": "minor",
+        "low": "minor",
+        "info": "info",
+        "critical": "critical",
+        "major": "major",
+        "minor": "minor",
+    }
+
+    return severity_map.get(severity, "info")
 
 def _with_severity_policy(finding: dict[str, Any]) -> dict[str, Any]:
-    severity = _normalize_severity(finding.get("severity"))
+    severity = _normalize_severity(
+        finding.get("severity"),
+        finding.get("rule_id"),
+        finding.get("message"),
+    )
     policy = _SEVERITY_POLICY[severity]
     return {
         **finding,
