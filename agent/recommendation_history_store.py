@@ -102,6 +102,24 @@ class RecommendationHistoryStore:
                 ON recommendation_history(source)
                 """
             )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS review_feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    review_id TEXT NOT NULL,
+                    rating TEXT NOT NULL,
+                    comment TEXT NOT NULL,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+
+    def add_feedback(self, review_id: str, rating: str, comment: str = "") -> None:
+        with self._conn() as conn:
+            conn.execute(
+                "INSERT INTO review_feedback (review_id, rating, comment) VALUES (?, ?, ?)",
+                (review_id, rating, comment),
+            )
 
     def add_findings(
         self,

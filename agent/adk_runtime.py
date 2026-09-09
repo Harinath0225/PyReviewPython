@@ -32,7 +32,15 @@ class ADKRuntime:
             mode="single_turn",
         )
 
-    def review(self, repo_path: str | None = None, code_snippet: str | None = None, language: str = "python", review_id: str | None = None) -> dict[str, Any]:
+    def review(
+        self,
+        repo_path: str | None = None,
+        code_snippet: str | None = None,
+        language: str = "python",
+        review_id: str | None = None,
+        business_documents: list[dict[str, str]] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         if self._agent is None:
             self.initialize()
 
@@ -47,6 +55,8 @@ class ADKRuntime:
             code_snippet=code_snippet,
             language=language,
             review_id=review_id,
+            business_documents=business_documents,
+            **kwargs,
         )
 
     def run(self, prompt: str) -> str:
