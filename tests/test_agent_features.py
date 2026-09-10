@@ -26,7 +26,7 @@ class AgentFeatureTests(unittest.TestCase):
 
         self.assertIn("score", result)
         self.assertIn("dimensions", result)
-        self.assertEqual(result["owasp"][0]["category"], "A03:2021 Injection")
+        self.assertEqual(result["owasp"][0]["category"], "A05:2025 Injection")
         self.assertTrue(result["owasp"][0]["url"].startswith("https://owasp.org/"))
 
     def test_story_contains_business_and_jira_forms(self) -> None:
