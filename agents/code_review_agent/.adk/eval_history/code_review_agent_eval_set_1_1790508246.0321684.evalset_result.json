@@ -1,0 +1,2157 @@
+{
+  "eval_set_result_id": "code_review_agent_eval_set_1_1790508246.0321684",
+  "eval_set_result_name": "code_review_agent_eval_set_1_1790508246.0321684",
+  "eval_set_id": "eval_set_1",
+  "eval_case_results": [
+    {
+      "eval_set_file": "eval_set_1",
+      "eval_set_id": "eval_set_1",
+      "eval_id": "eval_command_injection_defense",
+      "final_eval_status": 2,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "tool_trajectory_avg_score",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.0,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_evaluation_score",
+          "threshold": 5.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_match_score",
+          "threshold": 0.7,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.17941176470588238,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "safety_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "multi_turn_task_success_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "final_response_match_v2",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_final_response_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "hallucinations_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_tool_use_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_multi_turn_trajectory_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-5a9bc98f-06cb-41c0-9789-d70d71511d8c",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Review this network ping handler and suggest a fix:\n\nimport subprocess\n\ndef ping_host(target_host):\n    cmd = f\"ping -c 1 {target_host}\"\n    return subprocess.call(cmd, shell=True)",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "I have all the necessary information:\n1.  **Vulnerability**: Command Injection (Critical).\n2.  **Root Cause**: Using `shell=True` with an f-string that includes unvalidated user input (`target_host`).\n3.  **OWASP Context**: This falls under the \"Injection\" category.\n4.  **Remediation**:\n    *   Avoid `shell=True`.\n    *   Pass the command as a list of arguments.\n    *   Validate the input (e.g., using regex for hostnames/IPs).\n    *   Use `subprocess.run` instead of `subprocess.call` for better control.\n\nI will now construct the final response.",
+                  "thought": true,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                },
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "### **Security Review: Network Ping Handler**\n\nThe code you provided contains a **Critical** security vulnerability that could allow an attacker to execute arbitrary commands on your system.\n\n---\n\n### **1. Identified Vulnerabilities**\n\n#### **[Critical] Command Injection (SEC004)**\n*   **Root Cause:** The function uses `subprocess.call(cmd, shell=True)` where `cmd` is constructed using an f-string containing the `target_host` variable. \n*   **Risk:** When `shell=True` is used, the string is passed directly to the system shell (like `/bin/sh` or `cmd.exe`). An attacker could provide a \"host\" like `; rm -rf /` or `google.com && cat /etc/passwd`. The shell would interpret the `;` or `&&` as command separators and execute the malicious payload following the ping command.\n*   **OWASP Mapping:** This falls under **[A03:2021 – Injection](https://owasp.org/Top10/A03_2021-Injection/)**.\n\n#### **[Minor] Missing Input Validation (SUG003)**\n*   **Root Cause:** The `target_host` argument is used directly without any verification that it is a valid IP address or hostname.\n*   **Risk:** Even without shell injection, malformed input could lead to unexpected application behavior or resource exhaustion.\n\n---\n\n### **2. Recommended Remediation**\n\nTo fix these issues, you should follow these defensive programming principles:\n1.  **Avoid `shell=True`**: Pass the command and its arguments as a **list**. This ensures the OS treats the input as a single argument to the `ping` executable, rather than instructions for a shell.\n2.  **Input Validation**: Use a regular expression to ensure the `target_host` matches an expected pattern (e.g., a valid hostname or IP address).\n3.  **Use Modern APIs**: Use `subprocess.run()` instead of the older `subprocess.call()`.\n\n---\n\n### **3. Secure Refactored Code**\n\n```python\nimport subprocess\nimport re\n\ndef ping_host(target_host: str) -> int:\n    \"\"\"\n    Pings a host securely using a list of arguments and input validation.\n    \n    Args:\n        target_host: The hostname or IP address to ping.\n        \n    Returns:\n        The return code of the ping command (0 for success).\n        \n    Raises:\n        ValueError: If the target_host contains invalid characters.\n    \"\"\"\n    \n    # 1. Input Validation: Allow only alphanumeric, dots, and hyphens (standard for hostnames/IPs)\n    # This prevents attackers from passing characters like ';', '&', '|', '$', etc.\n    if not re.match(r\"^[a-zA-Z0-9.-]+$\", target_host):\n        raise ValueError(f\"Invalid characters detected in host: {target_host!r}\")\n\n    # 2. Secure Execution: Pass command as a list and set shell=False (default)\n    # This prevents the shell from interpreting special characters.\n    cmd = [\"ping\", \"-c\", \"1\", target_host]\n    \n    try:\n        # subprocess.run is the recommended modern interface\n        result = subprocess.run(\n            cmd, \n            capture_output=True, \n            text=True, \n            check=False  # We want to return the exit code, not raise an exception on non-zero\n        )\n        return result.returncode\n    except FileNotFoundError:\n        # Handle cases where 'ping' might not be installed on the system\n        print(\"Error: 'ping' command not found.\")\n        return -1\n    except Exception as e:\n        print(f\"An unexpected error occurred: {e}\")\n        return -1\n\n# --- Test Cases ---\nif __name__ == \"__main__\":\n    # Valid host\n    print(f\"Ping google.com: {ping_host('google.com')}\")\n    \n    # Malicious host (will be caught by validation)\n    try:\n        print(f\"Ping malicious: {ping_host('google.com; ls')}\")\n    except ValueError as e:\n        print(f\"Caught expected error: {e}\")\n```\n\n### **Summary of Changes**\n| Feature | Original Code | Secure Code |\n| :--- | :--- | :--- |\n| **Command Construction** | String (f-string) | **List of arguments** |\n| **Shell Execution** | `shell=True` (Dangerous) | **`shell=False` (Safe)** |\n| **Input Validation** | None | **Regex Whitelist** |\n| **API Used** | `subprocess.call` | **`subprocess.run`** |\n| **Type Safety** | No annotations | **Added type hints** |",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "The user wants me to review a Python code snippet for a network ping handler and suggest a fix.\n\nCode snippet:\n```python\nimport subprocess\n\ndef ping_host(target_host):\n    cmd = f\"ping -c 1 {target_host}\"\n    return subprocess.call(cmd, shell=True)\n```\n\n1.  **Analyze the code**:\n    *   It uses `subprocess.call` with `shell=True`.\n    *   It uses an f-string to construct the command: `f\"ping -c 1 {target_host}\"`.\n    *   This is a classic Command Injection vulnerability. If `target_host` contains something like `; rm -rf /`, the command executed would be `ping -c 1 ; rm -rf /`.\n\n2.  **Plan the response**:\n    *   Step 1: Call `scan_python_code` to get a formal analysis.\n    *   Step 2: Call `lookup_owasp_guidance` for \"Injection\" to provide context.\n    *   Step 3: Explain the risk (Command Injection).\n    *   Step 4: Provide a refactored, secure version using `subprocess.run` with `shell=False` and a list of arguments.\n\nLet's start by calling `scan_python_code`.",
+                        "thought": true,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      },
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_1209516",
+                          "args": {
+                            "code_snippet": "import subprocess\n\ndef ping_host(target_host):\n    cmd = f\"ping -c 1 {target_host}\"\n    return subprocess.call(cmd, shell=True)"
+                          },
+                          "name": "scan_python_code",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "EiYKJGUyNDgzMGE3LTVjZDYtNDJmZS05OThiLWVlNTM5ZTcyYjljMw==",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_1209516",
+                          "name": "scan_python_code",
+                          "response": {
+                            "result": "{\n  \"findings_count\": 3,\n  \"findings\": [\n    {\n      \"line\": 5,\n      \"severity\": \"critical\",\n      \"rule_id\": \"SEC004\",\n      \"category\": \"security\",\n      \"message\": \"Command Injection: subprocess called with shell=True and a dynamic command string. An attacker can append arbitrary shell commands using ;, &&, or | operators.\",\n      \"recommendation\": \"Pass the command as a list of arguments and remove shell=True so the OS never invokes a shell interpreter. Validate and whitelist every element of user input.\",\n      \"evidence\": \"subprocess.call(..., shell=True)\",\n      \"replacement\": \"# Pass command as a list \\u2014 no shell interpreter invoked\\nresult = subprocess.run([\\\"your_cmd\\\", arg1, arg2], capture_output=True, text=True, check=True)\",\n      \"severity_label\": \"Critical / Blocker\",\n      \"pr_blocking\": true,\n      \"comment_prefix\": \"### **[Critical / Blocker] (Critical)**\"\n    },\n    {\n      \"line\": 3,\n      \"severity\": \"info\",\n      \"rule_id\": \"SUG002\",\n      \"category\": \"quality\",\n      \"message\": \"Suggestion: Function `ping_host` is missing a return type annotation.\",\n      \"recommendation\": \"Add a return type annotation (e.g. `-> list[dict]` or `-> str`) to improve readability, IDE support, and runtime type checking.\",\n      \"evidence\": \"def ping_host(...)\",\n      \"replacement\": \"def ping_host(...) -> <return_type>:\",\n      \"severity_label\": \"Info / Nitpick (Nit)\",\n      \"pr_blocking\": false,\n      \"comment_prefix\": \"### **[Info / Nitpick (Nit)] (Info)**\"\n    },\n    {\n      \"line\": 3,\n      \"severity\": \"minor\",\n      \"rule_id\": \"SUG003\",\n      \"category\": \"quality\",\n      \"message\": \"Suggestion: Function `ping_host` invokes a subprocess without apparent input validation. Validate and sanitize arguments before passing them to system calls.\",\n      \"recommendation\": \"Validate the input (e.g. with a regex whitelist for IP addresses or hostnames) and raise an exception if the input does not match expected patterns.\",\n      \"evidence\": \"subprocess call with unvalidated argument\",\n      \"replacement\": \"import re\\n# Whitelist: allow only valid IPv4 or hostname\\nif not re.match(r'^[a-zA-Z0-9._-]+$', host_input):\\n    raise ValueError(f'Invalid host: {host_input!r}')\\noutput = subprocess.check_output([\\\"ping\\\", \\\"-c\\\", \\\"1\\\", host_input], text=True)\",\n      \"severity_label\": \"Minor / Suggestion\",\n      \"pr_blocking\": false,\n      \"comment_prefix\": \"### **[Minor / Suggestion] (Minor)**\"\n    }\n  ]\n}"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "The `scan_python_code` tool identified a **Critical** Command Injection vulnerability. It also suggested adding type annotations and input validation.\n\nNow, I'll call `lookup_owasp_guidance` for \"Injection\" to provide the user with the broader security context.",
+                        "thought": true,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      },
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_1217070",
+                          "args": {
+                            "vulnerability_category": "Injection"
+                          },
+                          "name": "lookup_owasp_guidance",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "EiYKJGUyNDgzMGE3LTVjZDYtNDJmZS05OThiLWVlNTM5ZTcyYjljMw==",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_1217070",
+                          "name": "lookup_owasp_guidance",
+                          "response": {
+                            "result": "OWASP Top 10 Category Matches: ['Injection']. Always use parameterized queries, safe execution APIs, and boundary checks."
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  },
+                  "grounding_metadata": null
+                }
+              ]
+            },
+            "creation_timestamp": 1790508091.194581,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "code_review_agent": {
+                  "name": "code_review_agent",
+                  "instructions": "You are an authorized defensive security engineer, static code analyzer, and code quality assistant. Your role is to help software developers write robust, clean, and defensively protected Python applications. When code is provided for review or vulnerability assessment: 1. First call the `scan_python_code` tool to run deterministic AST static security analysis. 2. If business requirements, Jira tickets, or Jira screenshots are present, delegate to `business_requirement_subagent`    or call `analyze_and_map_business_requirements` to create a business summary and traceability matrix. 3. If applicable, call `lookup_owasp_guidance` to correlate OWASP Top 10 categories. 4. Explain the identified security and business logic risks constructively, focusing on root causes (such as unescaped input, shell execution, or purchase price refund ambiguity). 5. Always provide safe, refactored Python code demonstrating standard defensive remediations:    - Use parameterized queries (e.g., cursor.execute('SELECT ... ?', (param,))) instead of string formatting.    - Use safe subprocess execution (e.g., subprocess.run(['cmd', arg], shell=False)) instead of shell=True.    - Use os.path.realpath / path boundary checks for file paths.    - Enforce proportional discount attribution (effective_paid_price) and threshold clawback rules. Do not provide weaponized attack payloads or malicious instructions. Focus entirely on constructive remediation and secure development.\n\nYou are an agent. Your internal name is \"code_review_agent\". The description about you is \"Agentic Code Review & Security Analysis Engine powered by Gemini.\".\n\n\nYou have a list of other agents to transfer to:\n\n\nAgent name: business_requirement_subagent\nAgent description: Subagent specializing in parsing BRDs, Jira tickets, and Jira/BRD screenshots, creating summaries, and mapping business requirements to the codebase.\n\n\nIf you are the best to answer the question according to your description,\nyou can answer it.\n\nIf another agent is better for answering the question according to its\ndescription, call `transfer_to_agent` function to transfer the question to that\nagent. When transferring, do not generate any text other than the function\ncall.\n\n**NOTE**: the only available agents for `transfer_to_agent` function are\n`business_requirement_subagent`.\n",
+                  "tool_declarations": [
+                    {
+                      "retrieval": null,
+                      "computer_use": null,
+                      "file_search": null,
+                      "google_search": null,
+                      "google_maps": null,
+                      "code_execution": null,
+                      "enterprise_web_search": null,
+                      "function_declarations": [
+                        {
+                          "description": "Transfer the query to another agent.\n\nUse this tool to hand off control to another agent that is more suitable to\nanswer the user's query according to the agent's description.\n\nArgs:\n  agent_name: the agent name to transfer to.",
+                          "name": "transfer_to_agent",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "agent_name": {
+                                "title": "Agent Name",
+                                "type": "string",
+                                "enum": [
+                                  "business_requirement_subagent"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "agent_name"
+                            ],
+                            "title": "transfer_to_agentParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Scans Python source code using AST analysis for security vulnerabilities (SQL injection, Command injection, Path traversal, and business logic flaws).\n\nArgs:\n    code_snippet: Python code text to inspect.\n\nReturns:\n    JSON string containing detected vulnerabilities, severity levels, rule IDs, and remediation guidance.",
+                          "name": "scan_python_code",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "code_snippet": {
+                                "title": "Code Snippet",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code_snippet"
+                            ],
+                            "title": "scan_python_codeParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Checks untrusted input text or instructions against Model Armor guardrails for prompt injection or system prompt extraction.\n\nArgs:\n    text: Untrusted user input text.\n\nReturns:\n    JSON string containing threat flags and blocked status.",
+                          "name": "check_prompt_safety",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "text": {
+                                "title": "Text",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ],
+                            "title": "check_prompt_safetyParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Provides OWASP Top 10 context, CWE mapping, and remediation best practices.\n\nArgs:\n    vulnerability_category: Name or type of vulnerability (e.g., 'Injection', 'Broken Access Control').\n\nReturns:\n    Remediation advice and OWASP documentation references.",
+                          "name": "lookup_owasp_guidance",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "vulnerability_category": {
+                                "title": "Vulnerability Category",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "vulnerability_category"
+                            ],
+                            "title": "lookup_owasp_guidanceParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Analyzes business requirements (BRD text, Jira ticket, user story, or screenshot data URL)\n\nand maps them to Python code elements (traceability matrix, coverage score, flaws).\n\nArgs:\n    business_requirement: Text or base64 screenshot data URL of the business requirement or Jira story.\n    code_snippet: Python code snippet to map against requirements.\n\nReturns:\n    JSON string containing business summary, requirements list, traceability matrix, and coverage score.",
+                          "name": "analyze_and_map_business_requirements",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "business_requirement": {
+                                "title": "Business Requirement",
+                                "type": "string"
+                              },
+                              "code_snippet": {
+                                "title": "Code Snippet",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "business_requirement",
+                              "code_snippet"
+                            ],
+                            "title": "analyze_and_map_business_requirementsParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Extracts structured business requirements, user stories, and acceptance criteria from a Jira ticket or BRD screenshot.\n\nArgs:\n    screenshot_data_url_or_path: Base64 data URL (e.g. data:image/png;base64,...) or file path to image.\n\nReturns:\n    JSON string containing extracted ticket key, title, summary, user stories, acceptance criteria, and business rules.",
+                          "name": "extract_jira_or_brd_screenshot",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "screenshot_data_url_or_path": {
+                                "title": "Screenshot Data Url Or Path",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "screenshot_data_url_or_path"
+                            ],
+                            "title": "extract_jira_or_brd_screenshotParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        }
+                      ],
+                      "google_search_retrieval": null,
+                      "parallel_ai_search": null,
+                      "url_context": null,
+                      "mcp_servers": null,
+                      "exa_ai_search": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "inv_cmdi_002",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Review this network ping handler and suggest a fix:\n\nimport subprocess\n\ndef ping_host(target_host):\n    cmd = f\"ping -c 1 {target_host}\"\n    return subprocess.call(cmd, shell=True)",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "### Security Vulnerability: Command Injection (CWE-78 / OWASP A03:2021)\nExecuting external processes with `shell=True` and string formatting allows command injection if `target_host` contains shell metacharacters like `;`, `&`, or `|`.\n\n### Suggested Defensive Fix:\nPass arguments as an argument list and ensure `shell=False`:\n\n```python\nimport subprocess\n\ndef ping_host(target_host: str) -> int:\n    return subprocess.run(\n        [\"ping\", \"-c\", \"1\", target_host],\n        shell=False,\n        check=False,\n        capture_output=True,\n    ).returncode\n```",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "tool_uses": [
+                {
+                  "id": null,
+                  "args": {
+                    "code_snippet": "import subprocess\n\ndef ping_host(target_host):\n    cmd = f\"ping -c 1 {target_host}\"\n    return subprocess.call(cmd, shell=True)"
+                  },
+                  "name": "scan_python_code",
+                  "partial_args": null,
+                  "will_continue": null
+                }
+              ],
+              "tool_responses": [],
+              "intermediate_responses": []
+            },
+            "creation_timestamp": 0.0,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "tool_trajectory_avg_score",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.0,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_evaluation_score",
+              "threshold": 5.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_match_score",
+              "threshold": 0.7,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.17941176470588238,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "safety_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "multi_turn_task_success_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "final_response_match_v2",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_final_response_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "hallucinations_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_tool_use_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_multi_turn_trajectory_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___0cfd63de-f245-452d-9926-feaa189b6780",
+      "session_details": null,
+      "user_id": "test_user_id"
+    },
+    {
+      "eval_set_file": "eval_set_1",
+      "eval_set_id": "eval_set_1",
+      "eval_id": "eval_sql_injection_defense",
+      "final_eval_status": 2,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "tool_trajectory_avg_score",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.0,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_evaluation_score",
+          "threshold": 5.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_match_score",
+          "threshold": 0.7,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.25119236883942764,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "safety_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "multi_turn_task_success_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "final_response_match_v2",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_final_response_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "hallucinations_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_tool_use_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_multi_turn_trajectory_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-88d59ca4-f174-4972-affb-ffd1776c49e6",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Review this function for security vulnerabilities and provide a safe refactoring:\n\nimport sqlite3\n\ndef get_user_by_id(db_path, user_id):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    query = f\"SELECT id, username, email FROM users WHERE user_id = '{user_id}'\"\n    cursor.execute(query)\n    return cursor.fetchone()",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "I have all the necessary information:\n1.  **Vulnerability**: SQL Injection (Critical).\n2.  **Root Cause**: Using an f-string to embed `user_id` directly into the SQL query string.\n3.  **OWASP Category**: Injection.\n4.  **Remediation**: Use parameterized queries (e.g., `cursor.execute(\"... WHERE user_id = ?\", (user_id,))`).\n5.  **Refactoring**: I will provide a clean, safe version of the function, including type hints and proper resource management (using `with` statements for the connection).\n\nPlan:\n1.  Acknowledge the code review request.\n2.  Present the findings from the scan.\n3.  Explain the SQL Injection risk.\n4.  Provide the OWASP context.\n5.  Provide the refactored, secure code.",
+                  "thought": true,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                },
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "### **Security Analysis Report**\n\nI have completed a security scan and code quality review of the provided `get_user_by_id` function.\n\n#### **1. Findings Summary**\n\n| Severity | Rule ID | Category | Description |\n| :--- | :--- | :--- | :--- |\n| 🔴 **Critical** | `SEC003` | Security | **SQL Injection**: The SQL query is constructed using an f-string, embedding `user_id` directly into the command. |\n| 🔵 **Info** | `SUG002` | Quality | Missing return type annotations. |\n\n---\n\n#### **2. Detailed Vulnerability Analysis**\n\n**[Critical / Blocker] SQL Injection (SEC003)**\n* **Root Cause**: The code uses Python f-strings (`f\"SELECT ... WHERE user_id = '{user_id}'\"`) to build a database query. This treats the content of `user_id` as part of the SQL command itself rather than as data.\n* **Risk**: An attacker can provide a malicious string for `user_id` (e.g., `' OR '1'='1`) to bypass authentication, extract the entire user database, or even delete tables (e.g., `'; DROP TABLE users; --`).\n* **OWASP Mapping**: This falls under the **[OWASP Top 10: Injection](https://owasp.org/www-project-top-ten/2017/A1_2017-Injection)** category.\n\n---\n\n#### **3. Safe Refactoring**\n\nTo remediate this, you must use **parameterized queries** (also known as prepared statements). This ensures the database driver treats the input strictly as data, making it impossible for the input to be interpreted as a command.\n\nI have also improved the code by:\n1.  **Using Context Managers (`with`)**: Ensures the database connection is closed automatically, even if an error occurs.\n2.  **Adding Type Hints**: Improves code maintainability and developer experience.\n3.  **Implementing Parameterized Queries**: The primary security fix.\n\n```python\nimport sqlite3\nfrom typing import Optional, Tuple, Any\n\ndef get_user_by_id(db_path: str, user_id: str) -> Optional[Tuple[Any, ...]]:\n    \"\"\"\n    Safely retrieves a user by their ID using parameterized queries.\n    \n    Args:\n        db_path: Path to the SQLite database file.\n        user_id: The unique identifier for the user.\n        \n    Returns:\n        A tuple containing user data if found, otherwise None.\n    \"\"\"\n    # Use a context manager to ensure the connection is closed automatically\n    try:\n        with sqlite3.connect(db_path) as conn:\n            cursor = conn.cursor()\n            \n            # SAFE: Use '?' as a placeholder and pass the value as a tuple.\n            # The database driver handles escaping the input safely.\n            query = \"SELECT id, username, email FROM users WHERE user_id = ?\"\n            cursor.execute(query, (user_id,))\n            \n            return cursor.fetchone()\n            \n    except sqlite3.Error as e:\n        # In a production environment, log this error properly\n        print(f\"Database error: {e}\")\n        return None\n\n# Example usage:\n# user = get_user_by_id(\"app_database.db\", \"12345\")\n```\n\n#### **Key Defensive Principles Applied:**\n*   **Separation of Code and Data**: By using `?`, the SQL engine receives the command structure first, and the data separately.\n*   **Resource Management**: The `with sqlite3.connect(...)` block prevents connection leaks.\n*   **Type Safety**: Explicit type hints (`str`, `Optional[Tuple[...]]`) help prevent logic errors during development.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "The user wants me to review a Python function for security vulnerabilities and provide a safe refactoring.\n\nThe function is:\n```python\nimport sqlite3\n\ndef get_user_by_id(db_path, user_id):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    query = f\"SELECT id, username, email FROM users WHERE user_id = '{user_id}'\"\n    cursor.execute(query)\n    return cursor.fetchone()\n```\n\n1.  **Analyze the code**: The code uses an f-string to construct a SQL query with `user_id`. This is a classic SQL injection vulnerability.\n2.  **Call `scan_python_code`**: I should first run the static analysis tool.\n3.  **Call `lookup_owasp_guidance`**: Since I've identified SQL injection, I should look up the OWASP guidance for it.\n4.  **Formulate the response**:\n    *   Identify the vulnerability (SQL Injection).\n    *   Explain the risk (attacker can manipulate the query).\n    *   Provide the OWASP context.\n    *   Provide the refactored, safe code using parameterized queries.\n\nLet's start by calling `scan_python_code`.",
+                        "thought": true,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      },
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_205577",
+                          "args": {
+                            "code_snippet": "import sqlite3\n\ndef get_user_by_id(db_path, user_id):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    query = f\"SELECT id, username, email FROM users WHERE user_id = '{user_id}'\"\n    cursor.execute(query)\n    return cursor.fetchone()"
+                          },
+                          "name": "scan_python_code",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "EiYKJGUyNDgzMGE3LTVjZDYtNDJmZS05OThiLWVlNTM5ZTcyYjljMw==",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_205577",
+                          "name": "scan_python_code",
+                          "response": {
+                            "result": "{\n  \"findings_count\": 2,\n  \"findings\": [\n    {\n      \"line\": 7,\n      \"severity\": \"critical\",\n      \"rule_id\": \"SEC003\",\n      \"category\": \"security\",\n      \"message\": \"SQL Injection: SQL query built with string interpolation \\u2014 user input is embedded directly into the query.\",\n      \"recommendation\": \"Use parameterized queries. Pass user values as bound parameters, never via string formatting.\",\n      \"evidence\": \"Tainted variable `query` (SQL f-string from line 6) passed to execute()\",\n      \"replacement\": \"# Safe parameterized query \\u2014 user input is treated as data, not SQL\\ncursor.execute(\\\"SELECT * FROM users WHERE username = ?\\\", (username,))\",\n      \"severity_label\": \"Critical / Blocker\",\n      \"pr_blocking\": true,\n      \"comment_prefix\": \"### **[Critical / Blocker] (Critical)**\"\n    },\n    {\n      \"line\": 3,\n      \"severity\": \"info\",\n      \"rule_id\": \"SUG002\",\n      \"category\": \"quality\",\n      \"message\": \"Suggestion: Function `get_user_by_id` is missing a return type annotation.\",\n      \"recommendation\": \"Add a return type annotation (e.g. `-> list[dict]` or `-> str`) to improve readability, IDE support, and runtime type checking.\",\n      \"evidence\": \"def get_user_by_id(...)\",\n      \"replacement\": \"def get_user_by_id(...) -> <return_type>:\",\n      \"severity_label\": \"Info / Nitpick (Nit)\",\n      \"pr_blocking\": false,\n      \"comment_prefix\": \"### **[Info / Nitpick (Nit)] (Info)**\"\n    }\n  ]\n}"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "The scan identified a critical SQL Injection vulnerability (SEC003) on line 7. It also gave a minor quality suggestion (SUG002) regarding type annotations.\n\nNow I will look up the OWASP guidance for \"Injection\" to provide more context.",
+                        "thought": true,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      },
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_254567",
+                          "args": {
+                            "vulnerability_category": "Injection"
+                          },
+                          "name": "lookup_owasp_guidance",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "EiYKJGUyNDgzMGE3LTVjZDYtNDJmZS05OThiLWVlNTM5ZTcyYjljMw==",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_254567",
+                          "name": "lookup_owasp_guidance",
+                          "response": {
+                            "result": "OWASP Top 10 Category Matches: ['Injection']. Always use parameterized queries, safe execution APIs, and boundary checks."
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  },
+                  "grounding_metadata": null
+                }
+              ]
+            },
+            "creation_timestamp": 1790508091.9303062,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "code_review_agent": {
+                  "name": "code_review_agent",
+                  "instructions": "You are an authorized defensive security engineer, static code analyzer, and code quality assistant. Your role is to help software developers write robust, clean, and defensively protected Python applications. When code is provided for review or vulnerability assessment: 1. First call the `scan_python_code` tool to run deterministic AST static security analysis. 2. If business requirements, Jira tickets, or Jira screenshots are present, delegate to `business_requirement_subagent`    or call `analyze_and_map_business_requirements` to create a business summary and traceability matrix. 3. If applicable, call `lookup_owasp_guidance` to correlate OWASP Top 10 categories. 4. Explain the identified security and business logic risks constructively, focusing on root causes (such as unescaped input, shell execution, or purchase price refund ambiguity). 5. Always provide safe, refactored Python code demonstrating standard defensive remediations:    - Use parameterized queries (e.g., cursor.execute('SELECT ... ?', (param,))) instead of string formatting.    - Use safe subprocess execution (e.g., subprocess.run(['cmd', arg], shell=False)) instead of shell=True.    - Use os.path.realpath / path boundary checks for file paths.    - Enforce proportional discount attribution (effective_paid_price) and threshold clawback rules. Do not provide weaponized attack payloads or malicious instructions. Focus entirely on constructive remediation and secure development.\n\nYou are an agent. Your internal name is \"code_review_agent\". The description about you is \"Agentic Code Review & Security Analysis Engine powered by Gemini.\".\n\n\nYou have a list of other agents to transfer to:\n\n\nAgent name: business_requirement_subagent\nAgent description: Subagent specializing in parsing BRDs, Jira tickets, and Jira/BRD screenshots, creating summaries, and mapping business requirements to the codebase.\n\n\nIf you are the best to answer the question according to your description,\nyou can answer it.\n\nIf another agent is better for answering the question according to its\ndescription, call `transfer_to_agent` function to transfer the question to that\nagent. When transferring, do not generate any text other than the function\ncall.\n\n**NOTE**: the only available agents for `transfer_to_agent` function are\n`business_requirement_subagent`.\n",
+                  "tool_declarations": [
+                    {
+                      "retrieval": null,
+                      "computer_use": null,
+                      "file_search": null,
+                      "google_search": null,
+                      "google_maps": null,
+                      "code_execution": null,
+                      "enterprise_web_search": null,
+                      "function_declarations": [
+                        {
+                          "description": "Transfer the query to another agent.\n\nUse this tool to hand off control to another agent that is more suitable to\nanswer the user's query according to the agent's description.\n\nArgs:\n  agent_name: the agent name to transfer to.",
+                          "name": "transfer_to_agent",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "agent_name": {
+                                "title": "Agent Name",
+                                "type": "string",
+                                "enum": [
+                                  "business_requirement_subagent"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "agent_name"
+                            ],
+                            "title": "transfer_to_agentParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Scans Python source code using AST analysis for security vulnerabilities (SQL injection, Command injection, Path traversal, and business logic flaws).\n\nArgs:\n    code_snippet: Python code text to inspect.\n\nReturns:\n    JSON string containing detected vulnerabilities, severity levels, rule IDs, and remediation guidance.",
+                          "name": "scan_python_code",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "code_snippet": {
+                                "title": "Code Snippet",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code_snippet"
+                            ],
+                            "title": "scan_python_codeParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Checks untrusted input text or instructions against Model Armor guardrails for prompt injection or system prompt extraction.\n\nArgs:\n    text: Untrusted user input text.\n\nReturns:\n    JSON string containing threat flags and blocked status.",
+                          "name": "check_prompt_safety",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "text": {
+                                "title": "Text",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ],
+                            "title": "check_prompt_safetyParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Provides OWASP Top 10 context, CWE mapping, and remediation best practices.\n\nArgs:\n    vulnerability_category: Name or type of vulnerability (e.g., 'Injection', 'Broken Access Control').\n\nReturns:\n    Remediation advice and OWASP documentation references.",
+                          "name": "lookup_owasp_guidance",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "vulnerability_category": {
+                                "title": "Vulnerability Category",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "vulnerability_category"
+                            ],
+                            "title": "lookup_owasp_guidanceParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Analyzes business requirements (BRD text, Jira ticket, user story, or screenshot data URL)\n\nand maps them to Python code elements (traceability matrix, coverage score, flaws).\n\nArgs:\n    business_requirement: Text or base64 screenshot data URL of the business requirement or Jira story.\n    code_snippet: Python code snippet to map against requirements.\n\nReturns:\n    JSON string containing business summary, requirements list, traceability matrix, and coverage score.",
+                          "name": "analyze_and_map_business_requirements",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "business_requirement": {
+                                "title": "Business Requirement",
+                                "type": "string"
+                              },
+                              "code_snippet": {
+                                "title": "Code Snippet",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "business_requirement",
+                              "code_snippet"
+                            ],
+                            "title": "analyze_and_map_business_requirementsParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Extracts structured business requirements, user stories, and acceptance criteria from a Jira ticket or BRD screenshot.\n\nArgs:\n    screenshot_data_url_or_path: Base64 data URL (e.g. data:image/png;base64,...) or file path to image.\n\nReturns:\n    JSON string containing extracted ticket key, title, summary, user stories, acceptance criteria, and business rules.",
+                          "name": "extract_jira_or_brd_screenshot",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "screenshot_data_url_or_path": {
+                                "title": "Screenshot Data Url Or Path",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "screenshot_data_url_or_path"
+                            ],
+                            "title": "extract_jira_or_brd_screenshotParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        }
+                      ],
+                      "google_search_retrieval": null,
+                      "parallel_ai_search": null,
+                      "url_context": null,
+                      "mcp_servers": null,
+                      "exa_ai_search": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "inv_sqli_001",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Review this function for security vulnerabilities and provide a safe refactoring:\n\nimport sqlite3\n\ndef get_user_by_id(db_path, user_id):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    query = f\"SELECT id, username, email FROM users WHERE user_id = '{user_id}'\"\n    cursor.execute(query)\n    return cursor.fetchone()",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "### Security Vulnerability: SQL Injection (OWASP A03:2021)\nThe function constructs SQL queries by directly interpolating untrusted input `user_id` using an f-string, allowing attackers to manipulate queries via SQL injection.\n\n### Suggested Defensive Fix:\nUse parameterized queries where query parameters are passed separately to the database engine:\n\n```python\nimport sqlite3\n\ndef get_user_by_id(db_path: str, user_id: str):\n    with sqlite3.connect(db_path) as conn:\n        cursor = conn.cursor()\n        query = \"SELECT id, username, email FROM users WHERE user_id = ?\"\n        cursor.execute(query, (user_id,))\n        return cursor.fetchone()\n```",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "tool_uses": [
+                {
+                  "id": null,
+                  "args": {
+                    "code_snippet": "import sqlite3\n\ndef get_user_by_id(db_path, user_id):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    query = f\"SELECT id, username, email FROM users WHERE user_id = '{user_id}'\"\n    cursor.execute(query)\n    return cursor.fetchone()"
+                  },
+                  "name": "scan_python_code",
+                  "partial_args": null,
+                  "will_continue": null
+                }
+              ],
+              "tool_responses": [],
+              "intermediate_responses": []
+            },
+            "creation_timestamp": 0.0,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "tool_trajectory_avg_score",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.0,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_evaluation_score",
+              "threshold": 5.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_match_score",
+              "threshold": 0.7,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.25119236883942764,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "safety_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "multi_turn_task_success_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "final_response_match_v2",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_final_response_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "hallucinations_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_tool_use_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_multi_turn_trajectory_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___0cd9583e-7c5a-4a56-9c08-8c7de0da6732",
+      "session_details": null,
+      "user_id": "test_user_id"
+    },
+    {
+      "eval_set_file": "eval_set_1",
+      "eval_set_id": "eval_set_1",
+      "eval_id": "eval_business_requirement_traceability",
+      "final_eval_status": 2,
+      "eval_metric_results": null,
+      "overall_eval_metric_results": [
+        {
+          "metric_name": "tool_trajectory_avg_score",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.0,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_evaluation_score",
+          "threshold": 5.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "response_match_score",
+          "threshold": 0.7,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": 0.16470588235294117,
+          "eval_status": 2,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "safety_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "multi_turn_task_success_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "final_response_match_v2",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_final_response_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "hallucinations_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_tool_use_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        },
+        {
+          "metric_name": "rubric_based_multi_turn_trajectory_quality_v1",
+          "threshold": 1.0,
+          "criterion": null,
+          "custom_function_path": null,
+          "score": null,
+          "eval_status": 3,
+          "details": {
+            "rubric_scores": null
+          }
+        }
+      ],
+      "eval_metric_result_per_invocation": [
+        {
+          "actual_invocation": {
+            "invocation_id": "e-6079f44b-a8aa-4601-a8cc-9de7bdaf80a0",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Review this code against business requirement BRD-DISC-01:\nBRD Requirement: When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings.\n\nCode:\ndef calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "The analysis confirms a high-severity business logic flaw: the requirement `BR-01` is completely unimplemented. The code returns the full price of the item without applying any proportional discount clawback.\n\nI have enough information to provide a complete response.\n\n**Summary of findings:**\n1.  **Security Scan:** No critical security vulnerabilities (like injection) were found, but a type annotation suggestion was made.\n2.  **Business Logic Analysis:** The code fails to implement the core requirement of `BRD-DISC-01`. It ignores the `discount` parameter and returns the full `item['price']`, which allows a user to exploit the bundle discount by returning individual items and getting the full price back, effectively bypassing the bundle savings.\n3.  **Risk:** Financial loss due to improper refund calculation (Business Logic Flaw).\n\n**Refactoring Plan:**\n1.  Calculate the total price of all items in the order.\n2.  Calculate the proportion of the item being returned relative to the total order price.\n3.  Apply that same proportion to the discount.\n4.  The refund amount should be: `item_price - (proportion * total_discount)`.\n    *   Wait, a more standard way: `Refund = item_price - (item_price / total_order_price) * total_discount`.\n    *   Actually, the requirement says \"proportional discount clawback\".\n    *   If the total order was $100 and the discount was $20, the effective price was $80.\n    *   If an item worth $20 is returned, the refund should be $20 - ($20/$100 * $20) = $20 - $4 = $16.\n    *   Or, more simply: `Refund = item_price * (1 - (discount / total_order_price))`.\n    *   Let's use: `refund_amount = item['price'] - (item['price'] / total_order_price * discount)`.\n\nLet's double check the math.\nTotal Price = 100. Discount = 20. Net = 80.\nItem 1 = 50. Item 2 = 50.\nRefund Item 1: $50 - (50/100 * 20) = $50 - $10 = $40.\nRemaining: Item 2 = 50. Net remaining = 40.\nTotal refund = 40. Total remaining = 40. Total = 80. Correct.\n\n**Refactored Code Structure:**\n```python\ndef calculate_refund(items: list[dict], return_id: str, discount: float = 20.0) -> dict:\n    total_order_price = sum(item['price'] for item in items)\n    \n    if total_order_price <= 0:\n        return {'status': 'error', 'message': 'Invalid total order price'}\n\n    for item in items:\n        if item['id'] == return_id:\n            # Calculate proportional discount clawback\n            # Proportion of the item relative to the total order\n            proportion = item['price'] / total_order_price\n            clawback = proportion * discount\n            refund_amount = item['price'] - clawback\n            \n            return {\n                'refund': round(refund_amount, 2), \n                'status': 'ok',\n                'clawback_applied': round(clawback, 2)\n            }\n            \n    return {'status': 'not_found'}\n```\n\nI'll present the findings clearly.",
+                  "thought": true,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                },
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "I have completed the review of the provided code against business requirement **BRD-DISC-01**.\n\n### **1. Executive Summary**\nThe code review identified a **High Severity Business Logic Flaw**. While the code is syntactically correct and free of common technical vulnerabilities (like SQL injection), it **completely fails to implement the mandatory business requirement** regarding proportional discount clawback. This oversight creates a significant financial risk, allowing users to exploit bundle discounts by returning individual items for their full original price.\n\n---\n\n### **2. Detailed Findings**\n\n#### **A. Security & Quality Analysis**\n*   **Vulnerability Type:** Business Logic Error (Improper Refund Calculation).\n*   **Severity:** **High**\n*   **Root Cause:** The `calculate_refund` function accepts a `discount` parameter but never utilizes it in the calculation. It returns the full `item['price']` regardless of any applied bundle discounts.\n*   **Risk:** **Financial Loss.** A customer could purchase a bundle of items at a discounted rate and then return a single item to receive the full, non-discounted price, effectively \"stealing\" the bundle savings.\n*   **Static Analysis Note:** The `scan_python_code` tool suggested adding type annotations to improve code maintainability and clarity.\n\n#### **B. Business Requirement Traceability**\n| Requirement ID | Description | Status | Gap/Risk |\n| :--- | :--- | :--- | :--- |\n| **BRD-DISC-01** | Proportional discount clawback must be applied to partial refunds. | **FAILED** | The implementation ignores the `discount` parameter, resulting in a 0% clawback rate. |\n\n---\n\n### **3. Remediation & Refactored Code**\n\nTo satisfy **BRD-DISC-01**, the refund logic must calculate the proportion of the item's value relative to the total order value and subtract that same proportion of the discount from the refund amount.\n\n#### **Secure & Compliant Implementation**\n\n```python\nfrom typing import List, Dict, Union\n\ndef calculate_refund(items: List[Dict[str, Union[str, float]]], return_id: str, discount: float = 20.0) -> Dict[str, Union[str, float]]:\n    \"\"\"\n    Calculates the refund amount for a specific item, applying a proportional \n    discount clawback as per BRD-DISC-01.\n    \n    Args:\n        items: List of dictionaries containing item details (e.g., {'id': 'A1', 'price': 50.0}).\n        return_id: The ID of the item being returned.\n        discount: The total bundled discount applied to the original order.\n        \n    Returns:\n        A dictionary containing the refund amount, status, and applied clawback.\n    \"\"\"\n    # 1. Calculate total order price to determine proportions\n    total_order_price = sum(item['price'] for item in items)\n    \n    if total_order_price <= 0:\n        return {'status': 'error', 'message': 'Invalid total order price'}\n\n    for item in items:\n        if item['id'] == return_id:\n            # 2. Calculate the proportion of this item relative to the whole order\n            # This ensures the discount is distributed fairly across all items.\n            proportion = item['price'] / total_order_price\n            \n            # 3. Calculate the proportional clawback\n            clawback_amount = proportion * discount\n            \n            # 4. Final refund is the item price minus its share of the discount\n            refund_amount = item['price'] - clawback_amount\n            \n            # Ensure we don't return a negative refund in edge cases\n            refund_amount = max(0.0, refund_amount)\n\n            return {\n                'refund': round(refund_amount, 2),\n                'clawback_applied': round(clawback_amount, 2),\n                'status': 'ok'\n            }\n            \n    return {'status': 'not_found'}\n\n# --- Test Case ---\nif __name__ == \"__main__\":\n    order_items = [\n        {'id': 'item_1', 'price': 50.0},\n        {'id': 'item_2', 'price': 50.0}\n    ]\n    # Total price = 100, Discount = 20. \n    # Returning item_1 (50% of order) should claw back 50% of discount ($10).\n    # Expected refund: 50 - 10 = 40.\n    \n    result = calculate_refund(order_items, 'item_1', discount=20.0)\n    print(f\"Refund Result: {result}\")\n```\n\n### **Key Improvements Made:**\n1.  **Requirement Compliance:** Implemented the proportional clawback logic required by **BRD-DISC-01**.\n2.  **Defensive Programming:** Added a check for `total_order_price <= 0` to prevent `ZeroDivisionError`.\n3.  **Type Safety:** Added Python type hints (`List`, `Dict`, `Union`) to improve code quality and prevent runtime type errors.\n4.  **Precision:** Used `round(..., 2)` to ensure financial values are handled with standard two-decimal precision.\n5.  **Clarity:** Added comprehensive docstrings and comments explaining the mathematical logic.",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "invocation_events": [
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "The user wants me to review a piece of Python code against a specific business requirement (BRD-DISC-01).\n\n**Business Requirement (BRD-DISC-01):**\n\"When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings.\"\n\n**Code Snippet:**\n```python\ndef calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}\n```\n\n**Analysis Plan:**\n1.  **Security Scan:** Use `scan_python_code` to check for any obvious security vulnerabilities in the snippet.\n2.  **Business Requirement Mapping:** Use `analyze_and_map_business_requirements` to see how the code aligns with the BRD.\n3.  **OWASP Guidance:** If a logic flaw is found (which it seems to be, regarding the discount), I'll use `lookup_owasp_guidance` for \"Broken Access Control\" or \"Business Logic Errors\" (though OWASP Top 10 might not have a specific \"Business Logic\" category, it's often under Broken Access Control or general security misconfigurations). Actually, I'll just focus on the logic flaw.\n4.  **Synthesis:**\n    *   The code ignores the `discount` parameter entirely in the calculation.\n    *   It returns the full `item['price']` without any clawback.\n    *   This violates the requirement of \"proportional discount clawback\".\n5.  **Remediation:** Provide a refactored version that calculates the refund by subtracting a proportional share of the discount.\n\nLet's start by calling the tools.",
+                        "thought": true,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      },
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_263942",
+                          "args": {
+                            "code_snippet": "def calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}"
+                          },
+                          "name": "scan_python_code",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "EiYKJGUyNDgzMGE3LTVjZDYtNDJmZS05OThiLWVlNTM5ZTcyYjljMw==",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_263942",
+                          "name": "scan_python_code",
+                          "response": {
+                            "result": "{\n  \"findings_count\": 1,\n  \"findings\": [\n    {\n      \"line\": 1,\n      \"severity\": \"info\",\n      \"rule_id\": \"SUG002\",\n      \"category\": \"quality\",\n      \"message\": \"Suggestion: Function `calculate_refund` is missing a return type annotation.\",\n      \"recommendation\": \"Add a return type annotation (e.g. `-> list[dict]` or `-> str`) to improve readability, IDE support, and runtime type checking.\",\n      \"evidence\": \"def calculate_refund(...)\",\n      \"replacement\": \"def calculate_refund(...) -> <return_type>:\",\n      \"severity_label\": \"Info / Nitpick (Nit)\",\n      \"pr_blocking\": false,\n      \"comment_prefix\": \"### **[Info / Nitpick (Nit)] (Info)**\"\n    }\n  ]\n}"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": "The security scan didn't find any critical vulnerabilities like SQL injection or command injection, just a minor quality suggestion.\n\nNow, I will map the business requirement to the code to formally identify the business logic flaw.",
+                        "thought": true,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      },
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": {
+                          "id": "call_1919106",
+                          "args": {
+                            "code_snippet": "def calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}",
+                            "business_requirement": "When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings."
+                          },
+                          "name": "analyze_and_map_business_requirements",
+                          "partial_args": null,
+                          "will_continue": null
+                        },
+                        "function_response": null,
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": "EiYKJGUyNDgzMGE3LTVjZDYtNDJmZS05OThiLWVlNTM5ZTcyYjljMw==",
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "model"
+                  },
+                  "grounding_metadata": null
+                },
+                {
+                  "author": "code_review_agent",
+                  "content": {
+                    "parts": [
+                      {
+                        "media_resolution": null,
+                        "code_execution_result": null,
+                        "executable_code": null,
+                        "file_data": null,
+                        "function_call": null,
+                        "function_response": {
+                          "will_continue": null,
+                          "scheduling": null,
+                          "parts": null,
+                          "id": "call_1919106",
+                          "name": "analyze_and_map_business_requirements",
+                          "response": {
+                            "result": "{\n  \"summary\": {\n    \"title\": \"Business Requirement Specification\",\n    \"ticket_key\": null,\n    \"executive_summary\": \"Business requirement for Business Requirement Specification. Defines 1 requirements across 0 user stories, 0 acceptance criteria, and 1 business rules.\",\n    \"business_goals\": [\n      \"Deliver Business Requirement Specification according to specifications\"\n    ],\n    \"user_stories_count\": 0,\n    \"acceptance_criteria_count\": 0,\n    \"business_rules_count\": 1,\n    \"identified_flaws_count\": 0,\n    \"identified_flaws\": []\n  },\n  \"requirements\": [\n    {\n      \"id\": \"BR-01\",\n      \"title\": \"Business Rule 1\",\n      \"description\": \"When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings.\",\n      \"type\": \"business_rule\",\n      \"critical_terms\": [\n        \"when\",\n        \"order\",\n        \"bundled\",\n        \"discount\",\n        \"partially\",\n        \"refunded\",\n        \"proportional\",\n        \"clawback\"\n      ],\n      \"raw_text\": \"When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings.\"\n    }\n  ],\n  \"traceability_matrix\": [\n    {\n      \"requirement_id\": \"BR-01\",\n      \"title\": \"Business Rule 1\",\n      \"requirement_text\": \"When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings.\",\n      \"status\": \"MISSING\",\n      \"coverage_score\": 0.0,\n      \"mapped_symbols\": [],\n      \"evidence\": \"No class, function, or statement matching requirement keywords was detected in the code.\",\n      \"gap_or_risk\": \"Requirement 'Business Rule 1' is not implemented in codebase.\",\n      \"remediation\": \"Implement business logic for: When an order with a bundled $20 discount is partially refunded, proportional discount clawback must...\"\n    }\n  ],\n  \"coverage_score\": 0.0,\n  \"findings\": [\n    {\n      \"rule_id\": \"BIZ_MISSING_BR_01\",\n      \"severity\": \"high\",\n      \"pr_blocking\": false,\n      \"line\": 1,\n      \"category\": \"business_logic\",\n      \"message\": \"Unimplemented Business Requirement: Business Rule 1\",\n      \"recommendation\": \"Add code implementation satisfying requirement BR-01: When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to preve.\"\n    }\n  ],\n  \"is_screenshot\": false,\n  \"source_type\": \"auto\"\n}"
+                          }
+                        },
+                        "inline_data": null,
+                        "text": null,
+                        "thought": null,
+                        "thought_signature": null,
+                        "video_metadata": null,
+                        "tool_call": null,
+                        "tool_response": null,
+                        "part_metadata": null,
+                        "audio_transcription": null,
+                        "media_processing": null
+                      }
+                    ],
+                    "role": "user"
+                  },
+                  "grounding_metadata": null
+                }
+              ]
+            },
+            "creation_timestamp": 1790508093.7693307,
+            "rubrics": null,
+            "app_details": {
+              "agent_details": {
+                "code_review_agent": {
+                  "name": "code_review_agent",
+                  "instructions": "You are an authorized defensive security engineer, static code analyzer, and code quality assistant. Your role is to help software developers write robust, clean, and defensively protected Python applications. When code is provided for review or vulnerability assessment: 1. First call the `scan_python_code` tool to run deterministic AST static security analysis. 2. If business requirements, Jira tickets, or Jira screenshots are present, delegate to `business_requirement_subagent`    or call `analyze_and_map_business_requirements` to create a business summary and traceability matrix. 3. If applicable, call `lookup_owasp_guidance` to correlate OWASP Top 10 categories. 4. Explain the identified security and business logic risks constructively, focusing on root causes (such as unescaped input, shell execution, or purchase price refund ambiguity). 5. Always provide safe, refactored Python code demonstrating standard defensive remediations:    - Use parameterized queries (e.g., cursor.execute('SELECT ... ?', (param,))) instead of string formatting.    - Use safe subprocess execution (e.g., subprocess.run(['cmd', arg], shell=False)) instead of shell=True.    - Use os.path.realpath / path boundary checks for file paths.    - Enforce proportional discount attribution (effective_paid_price) and threshold clawback rules. Do not provide weaponized attack payloads or malicious instructions. Focus entirely on constructive remediation and secure development.\n\nYou are an agent. Your internal name is \"code_review_agent\". The description about you is \"Agentic Code Review & Security Analysis Engine powered by Gemini.\".\n\n\nYou have a list of other agents to transfer to:\n\n\nAgent name: business_requirement_subagent\nAgent description: Subagent specializing in parsing BRDs, Jira tickets, and Jira/BRD screenshots, creating summaries, and mapping business requirements to the codebase.\n\n\nIf you are the best to answer the question according to your description,\nyou can answer it.\n\nIf another agent is better for answering the question according to its\ndescription, call `transfer_to_agent` function to transfer the question to that\nagent. When transferring, do not generate any text other than the function\ncall.\n\n**NOTE**: the only available agents for `transfer_to_agent` function are\n`business_requirement_subagent`.\n",
+                  "tool_declarations": [
+                    {
+                      "retrieval": null,
+                      "computer_use": null,
+                      "file_search": null,
+                      "google_search": null,
+                      "google_maps": null,
+                      "code_execution": null,
+                      "enterprise_web_search": null,
+                      "function_declarations": [
+                        {
+                          "description": "Transfer the query to another agent.\n\nUse this tool to hand off control to another agent that is more suitable to\nanswer the user's query according to the agent's description.\n\nArgs:\n  agent_name: the agent name to transfer to.",
+                          "name": "transfer_to_agent",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "agent_name": {
+                                "title": "Agent Name",
+                                "type": "string",
+                                "enum": [
+                                  "business_requirement_subagent"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "agent_name"
+                            ],
+                            "title": "transfer_to_agentParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Scans Python source code using AST analysis for security vulnerabilities (SQL injection, Command injection, Path traversal, and business logic flaws).\n\nArgs:\n    code_snippet: Python code text to inspect.\n\nReturns:\n    JSON string containing detected vulnerabilities, severity levels, rule IDs, and remediation guidance.",
+                          "name": "scan_python_code",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "code_snippet": {
+                                "title": "Code Snippet",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "code_snippet"
+                            ],
+                            "title": "scan_python_codeParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Checks untrusted input text or instructions against Model Armor guardrails for prompt injection or system prompt extraction.\n\nArgs:\n    text: Untrusted user input text.\n\nReturns:\n    JSON string containing threat flags and blocked status.",
+                          "name": "check_prompt_safety",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "text": {
+                                "title": "Text",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "text"
+                            ],
+                            "title": "check_prompt_safetyParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Provides OWASP Top 10 context, CWE mapping, and remediation best practices.\n\nArgs:\n    vulnerability_category: Name or type of vulnerability (e.g., 'Injection', 'Broken Access Control').\n\nReturns:\n    Remediation advice and OWASP documentation references.",
+                          "name": "lookup_owasp_guidance",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "vulnerability_category": {
+                                "title": "Vulnerability Category",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "vulnerability_category"
+                            ],
+                            "title": "lookup_owasp_guidanceParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Analyzes business requirements (BRD text, Jira ticket, user story, or screenshot data URL)\n\nand maps them to Python code elements (traceability matrix, coverage score, flaws).\n\nArgs:\n    business_requirement: Text or base64 screenshot data URL of the business requirement or Jira story.\n    code_snippet: Python code snippet to map against requirements.\n\nReturns:\n    JSON string containing business summary, requirements list, traceability matrix, and coverage score.",
+                          "name": "analyze_and_map_business_requirements",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "business_requirement": {
+                                "title": "Business Requirement",
+                                "type": "string"
+                              },
+                              "code_snippet": {
+                                "title": "Code Snippet",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "business_requirement",
+                              "code_snippet"
+                            ],
+                            "title": "analyze_and_map_business_requirementsParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        },
+                        {
+                          "description": "Extracts structured business requirements, user stories, and acceptance criteria from a Jira ticket or BRD screenshot.\n\nArgs:\n    screenshot_data_url_or_path: Base64 data URL (e.g. data:image/png;base64,...) or file path to image.\n\nReturns:\n    JSON string containing extracted ticket key, title, summary, user stories, acceptance criteria, and business rules.",
+                          "name": "extract_jira_or_brd_screenshot",
+                          "parameters": null,
+                          "parameters_json_schema": {
+                            "properties": {
+                              "screenshot_data_url_or_path": {
+                                "title": "Screenshot Data Url Or Path",
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "screenshot_data_url_or_path"
+                            ],
+                            "title": "extract_jira_or_brd_screenshotParams",
+                            "type": "object"
+                          },
+                          "response": null,
+                          "response_json_schema": null,
+                          "behavior": null
+                        }
+                      ],
+                      "google_search_retrieval": null,
+                      "parallel_ai_search": null,
+                      "url_context": null,
+                      "mcp_servers": null,
+                      "exa_ai_search": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "expected_invocation": {
+            "invocation_id": "inv_biz_003",
+            "user_content": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "Review this code against business requirement BRD-DISC-01:\nBRD Requirement: When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings.\n\nCode:\ndef calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "user"
+            },
+            "final_response": {
+              "parts": [
+                {
+                  "media_resolution": null,
+                  "code_execution_result": null,
+                  "executable_code": null,
+                  "file_data": null,
+                  "function_call": null,
+                  "function_response": null,
+                  "inline_data": null,
+                  "text": "### Business Logic Flaw: Bundle Discount Exploitation\nThe partial refund logic refunds the full list price without attributing the bundled discount, violating BRD-DISC-01.\n\n### Suggested Defensive Fix:\nAttribute proportional discount clawback based on order value:\n\n```python\ndef calculate_refund(items: list[dict], return_id: str, discount: float = 20.0) -> dict:\n    total_order = sum(item['price'] for item in items)\n    for item in items:\n        if item['id'] == return_id:\n            share = (item['price'] / total_order) * discount if total_order > 0 else 0\n            return {\n                'refund': round(max(0.0, item['price'] - share), 2),\n                'clawback': round(share, 2),\n                'status': 'ok'\n            }\n    return {'status': 'not_found'}\n```",
+                  "thought": null,
+                  "thought_signature": null,
+                  "video_metadata": null,
+                  "tool_call": null,
+                  "tool_response": null,
+                  "part_metadata": null,
+                  "audio_transcription": null,
+                  "media_processing": null
+                }
+              ],
+              "role": "model"
+            },
+            "intermediate_data": {
+              "tool_uses": [
+                {
+                  "id": null,
+                  "args": {
+                    "code_snippet": "def calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}"
+                  },
+                  "name": "scan_python_code",
+                  "partial_args": null,
+                  "will_continue": null
+                }
+              ],
+              "tool_responses": [],
+              "intermediate_responses": []
+            },
+            "creation_timestamp": 0.0,
+            "rubrics": null,
+            "app_details": null
+          },
+          "eval_metric_results": [
+            {
+              "metric_name": "tool_trajectory_avg_score",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.0,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_evaluation_score",
+              "threshold": 5.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "response_match_score",
+              "threshold": 0.7,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": 0.16470588235294117,
+              "eval_status": 2,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "safety_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "multi_turn_task_success_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "final_response_match_v2",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_final_response_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "hallucinations_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_tool_use_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            },
+            {
+              "metric_name": "rubric_based_multi_turn_trajectory_quality_v1",
+              "threshold": 1.0,
+              "criterion": null,
+              "custom_function_path": null,
+              "score": null,
+              "eval_status": 3,
+              "details": {
+                "rubric_scores": null
+              }
+            }
+          ]
+        }
+      ],
+      "session_id": "___eval___session___d462d2b4-f03e-4040-8f47-558e33961ea8",
+      "session_details": null,
+      "user_id": "test_user_id"
+    }
+  ],
+  "creation_timestamp": 1790508246.0321684
+}

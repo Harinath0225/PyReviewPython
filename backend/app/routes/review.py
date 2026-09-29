@@ -32,6 +32,10 @@ async def review_code(payload: dict[str, Any]) -> dict[str, object]:
     code_snippet = payload.get("code_snippet")
     github_url = payload.get("github_url")
     language = payload.get("language", "python")
+    business_documents = payload.get("business_documents")
+    business_screenshot = payload.get("business_screenshot") or payload.get("screenshot")
+    if business_screenshot:
+        business_documents = list(business_documents or []) + [{"type": "screenshot", "image_data": business_screenshot}]
 
     target_url = github_url or (code_snippet if isinstance(code_snippet, str) and code_snippet.strip().startswith(("http://", "https://")) else None)
     if target_url:
@@ -46,12 +50,24 @@ async def review_code(payload: dict[str, Any]) -> dict[str, object]:
     if not repo_path and not code_snippet:
         raise HTTPException(status_code=400, detail="Either repo_path or code_snippet is required.")
 
+    llm_model = payload.get("llm_model")
+    diagram_model = payload.get("diagram_model") or payload.get("mermaid_model")
+
     review_id = f"review-{uuid.uuid4().hex}"
     review_event_broadcaster.create(review_id, asyncio.get_running_loop())
     await review_event_broadcaster.set_status(review_id, "started")
     try:
-        runtime = ADKRuntime(orchestrator=CodeReviewOrchestrator())
-        result = await asyncio.to_thread(runtime.review, repo_path=repo_path, code_snippet=code_snippet, language=language, review_id=review_id)
+        runtime = ADKRuntime(orchestrator=CodeReviewOrchestrator(llm_model=llm_model, diagram_model=diagram_model))
+        result = await asyncio.to_thread(
+            runtime.review,
+            repo_path=repo_path,
+            code_snippet=code_snippet,
+            language=language,
+            review_id=review_id,
+            business_documents=business_documents,
+            llm_model=llm_model,
+            diagram_model=diagram_model,
+        )
         await _execute_pr_review_if_github_url(target_url, review_id, result)
         await review_event_broadcaster.set_status(review_id, "completed", result=result)
         return result
@@ -67,6 +83,9 @@ async def start_review(payload: dict[str, Any]) -> dict[str, str]:
     github_url = payload.get("github_url")
     language = payload.get("language", "python")
     business_documents = payload.get("business_documents")
+    business_screenshot = payload.get("business_screenshot") or payload.get("screenshot")
+    if business_screenshot:
+        business_documents = list(business_documents or []) + [{"type": "screenshot", "image_data": business_screenshot}]
 
     target_url = github_url or (code_snippet if isinstance(code_snippet, str) and code_snippet.strip().startswith(("http://", "https://")) else None)
     if target_url:
@@ -81,6 +100,9 @@ async def start_review(payload: dict[str, Any]) -> dict[str, str]:
     if not repo_path and not code_snippet:
         raise HTTPException(status_code=400, detail="Either repo_path or code_snippet is required.")
 
+    llm_model = payload.get("llm_model")
+    diagram_model = payload.get("diagram_model") or payload.get("mermaid_model")
+
     review_id = f"review-{uuid.uuid4().hex}"
     review_event_broadcaster.create(review_id, asyncio.get_running_loop())
     import inspect
@@ -90,6 +112,10 @@ async def start_review(payload: dict[str, Any]) -> dict[str, str]:
         kwargs["target_url"] = target_url
     if "business_documents" in sig.parameters and business_documents is not None:
         kwargs["business_documents"] = business_documents
+    if "llm_model" in sig.parameters and llm_model is not None:
+        kwargs["llm_model"] = llm_model
+    if "diagram_model" in sig.parameters and diagram_model is not None:
+        kwargs["diagram_model"] = diagram_model
     task = asyncio.create_task(_run_review(review_id, repo_path, code_snippet, language, **kwargs))
     _review_tasks[review_id] = task
     task.add_done_callback(lambda _: _review_tasks.pop(review_id, None))
@@ -178,18 +204,22 @@ async def _run_review(
     code_snippet: str | None,
     language: str,
     target_url: str | None = None,
-    business_documents: list[dict[str, str]] | None = None
+    business_documents: list[dict[str, str]] | None = None,
+    llm_model: str | None = None,
+    diagram_model: str | None = None,
 ) -> None:
     await review_event_broadcaster.set_status(review_id, "started")
     try:
-        runtime = ADKRuntime(orchestrator=CodeReviewOrchestrator())
+        runtime = ADKRuntime(orchestrator=CodeReviewOrchestrator(llm_model=llm_model, diagram_model=diagram_model))
         result = await asyncio.to_thread(
             runtime.review,
             repo_path=repo_path,
             code_snippet=code_snippet,
             language=language,
             review_id=review_id,
-            business_documents=business_documents
+            business_documents=business_documents,
+            llm_model=llm_model,
+            diagram_model=diagram_model,
         )
         await _execute_pr_review_if_github_url(target_url, review_id, result)
         await review_event_broadcaster.set_status(review_id, "completed", result=result)
@@ -269,6 +299,30 @@ async def review_github_pr(payload: dict[str, Any]) -> dict[str, Any]:
 @router.post("/review/story")
 async def review_story(payload: dict[str, Any]) -> dict[str, Any]:
     return {"status": "ok", **build_story(payload)}
+
+
+@router.post("/review/business-mapping")
+async def review_business_mapping(payload: dict[str, Any]) -> dict[str, Any]:
+    """Endpoint to directly parse a BRD, Jira story, or Jira screenshot and map it to code."""
+    from agent.business_requirement_subagent import BusinessRequirementSubagent
+
+    business_document = payload.get("business_document") or payload.get("business_documents") or payload.get("requirement")
+    screenshot = payload.get("screenshot") or payload.get("image_data") or payload.get("business_screenshot") or payload.get("jira_screenshot")
+    code_snippet = payload.get("code_snippet") or ""
+    repo_path = payload.get("repo_path")
+
+    target_input = screenshot if screenshot else business_document
+    if not target_input:
+        raise HTTPException(status_code=400, detail="Either business_document, requirement, or screenshot is required.")
+
+    subagent = BusinessRequirementSubagent()
+    result = await asyncio.to_thread(
+        subagent.analyze_and_map,
+        business_input=target_input,
+        code_snippet=code_snippet,
+        repo_path=repo_path,
+    )
+    return {"status": "ok", **result}
 
 
 @router.post("/review/{review_id}/feedback")

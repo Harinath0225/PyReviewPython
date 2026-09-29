@@ -61,7 +61,8 @@ class BusinessLogicAnalyzer:
 
         # Pattern 1: Ambiguous refund of purchase price / sticker price
         if any(p in doc_lower for p in ["refund the item's purchase price", "refund purchase price", "refund item's price", "refund sticker price"]):
-            flaws.append({
+            if "proportional" not in doc_lower and "effective" not in doc_lower and "net realized" not in doc_lower:
+                flaws.append({
                 "rule_id": "BIZ001",
                 "flawed_pattern": "Refund the item's purchase price",
                 "business_risk": "Ambiguity between MSRP/sticker price and net realized revenue (customer buys to discount, returns high-ticket item for sticker price, pocketing cash profit).",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from typing import Any
 
 from backend.app.config import get_settings
@@ -12,55 +13,93 @@ except Exception:
 
 
 class LLMReasoner:
-    def __init__(self) -> None:
+    def __init__(self, model_name: str | None = None) -> None:
         self.settings = get_settings()
+        self.model_name = (
+            model_name
+            or os.getenv("LLM_MODEL")
+            or os.getenv("GEMMA_MODEL")
+            or self.settings.llm_model
+            or "gemma-4-26b-a4b-it"
+        )
 
     def generate_review_reasoning(
         self,
         findings: list[dict[str, Any]],
         historical_context: str,
         owasp_context: list[str],
+        business_summary: dict[str, Any] | None = None,
+        requirement_mappings: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         provider = (self.settings.llm_provider or "gemini").strip().lower()
         if provider != "gemini":
-            fallback = self._deterministic_fallback(findings=findings, historical_context=historical_context)
+            fallback = self._deterministic_fallback(
+                findings=findings,
+                historical_context=historical_context,
+                business_summary=business_summary,
+                requirement_mappings=requirement_mappings,
+            )
             fallback["provider"] = provider
-            fallback["model"] = self.settings.llm_model
+            fallback["model"] = self.model_name
             fallback["fallback_used"] = True
             fallback["fallback_reason"] = f"Unsupported llm_provider '{provider}'."
             return fallback
 
-        return self._generate_with_gemini(findings=findings, historical_context=historical_context, owasp_context=owasp_context)
+        return self._generate_with_gemini(
+            findings=findings,
+            historical_context=historical_context,
+            owasp_context=owasp_context,
+            business_summary=business_summary,
+            requirement_mappings=requirement_mappings,
+        )
 
     def _generate_with_gemini(
         self,
         findings: list[dict[str, Any]],
         historical_context: str,
         owasp_context: list[str],
+        business_summary: dict[str, Any] | None = None,
+        requirement_mappings: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         api_key = self.settings.gemini_api_key
         if not api_key or genai is None:
-            fallback = self._deterministic_fallback(findings=findings, historical_context=historical_context)
+            fallback = self._deterministic_fallback(
+                findings=findings,
+                historical_context=historical_context,
+                business_summary=business_summary,
+                requirement_mappings=requirement_mappings,
+            )
             fallback["provider"] = "gemini"
-            fallback["model"] = self.settings.llm_model
+            fallback["model"] = self.model_name
             fallback["fallback_used"] = True
             fallback["fallback_reason"] = "Missing GEMINI_API_KEY or google-genai package."
             return fallback
 
         client = genai.Client(api_key=api_key)
-        prompt = self._build_prompt(findings=findings, historical_context=historical_context, owasp_context=owasp_context)
+        prompt = self._build_prompt(
+            findings=findings,
+            historical_context=historical_context,
+            owasp_context=owasp_context,
+            business_summary=business_summary,
+            requirement_mappings=requirement_mappings,
+        )
 
         try:
             response = client.models.generate_content(
-                model=self.settings.llm_model,
+                model=self.model_name,
                 contents=prompt,
             )
             text = getattr(response, "text", "") or ""
             parsed = self._parse_json_response(text)
             if parsed is None:
-                fallback = self._deterministic_fallback(findings=findings, historical_context=historical_context)
+                fallback = self._deterministic_fallback(
+                    findings=findings,
+                    historical_context=historical_context,
+                    business_summary=business_summary,
+                    requirement_mappings=requirement_mappings,
+                )
                 fallback["provider"] = "gemini"
-                fallback["model"] = self.settings.llm_model
+                fallback["model"] = self.model_name
                 fallback["fallback_used"] = True
                 fallback["fallback_reason"] = "Model response was not valid JSON; deterministic fallback used."
                 return fallback
@@ -78,14 +117,19 @@ class LLMReasoner:
                 "summary": summary,
                 "recommendations": normalized[:8],
                 "provider": "gemini",
-                "model": self.settings.llm_model,
-                "fallback_used": True,
-                "fallback_reason": "Deterministic fallback used because no LLM call was available.",
+                "model": self.model_name,
+                "fallback_used": False,
+                "fallback_reason": None,
             }
         except Exception as exc:
-            fallback = self._deterministic_fallback(findings=findings, historical_context=historical_context)
+            fallback = self._deterministic_fallback(
+                findings=findings,
+                historical_context=historical_context,
+                business_summary=business_summary,
+                requirement_mappings=requirement_mappings,
+            )
             fallback["provider"] = "gemini"
-            fallback["model"] = self.settings.llm_model
+            fallback["model"] = self.model_name
             fallback["fallback_used"] = True
             fallback["fallback_reason"] = str(exc)
             return fallback
@@ -95,22 +139,39 @@ class LLMReasoner:
         findings: list[dict[str, Any]],
         historical_context: str,
         owasp_context: list[str],
+        business_summary: dict[str, Any] | None = None,
+        requirement_mappings: list[dict[str, Any]] | None = None,
     ) -> str:
         top_findings = findings[:8]
         serialized_findings = json.dumps(top_findings, ensure_ascii=False)
         owasp_text = ", ".join(owasp_context)
         history_text = historical_context or "No historical context available."
 
+        biz_context_section = ""
+        if business_summary:
+            biz_title = business_summary.get("title", "Business Specification")
+            biz_exec = business_summary.get("executive_summary", "")
+            biz_context_section += f"\nBusiness Requirements Specification: {biz_title}\nSummary: {biz_exec}\n"
+        if requirement_mappings:
+            biz_context_section += "\nRequirement-to-Code Mappings:\n"
+            for m in requirement_mappings[:6]:
+                status = m.get("status", "UNKNOWN")
+                evidence = m.get("evidence", "")
+                gap = m.get("gap_or_risk") or ""
+                biz_context_section += f"- [{status}] {m.get('title')}: {evidence} {gap}\n"
+
         return (
-            "You are a senior application security and code quality reviewer. "
-            "Given deterministic findings from static checks, produce concise reasoning and remediation priorities.\n\n"
+            "You are a senior application security, business logic, and code quality reviewer. "
+            "Given deterministic findings from static checks, OWASP guidelines, and business requirements mappings, "
+            "produce concise reasoning, risk evaluation, and remediation priorities.\n\n"
             f"Finding count: {len(top_findings)} (non-zero means issues are present).\n"
             "Severity policy: Critical / Blocker (severity=critical, PR blocking=yes), "
             "Major / Required (severity=major, PR blocking=yes), "
             "Minor / Suggestion (severity=minor, PR blocking=no), and "
             "Info / Nitpick (severity=info, PR blocking=no).\n"
             f"OWASP context: {owasp_text}\n\n"
-            f"Historical context:\n{history_text}\n\n"
+            f"Historical context:\n{history_text}\n"
+            f"{biz_context_section}\n"
             f"Findings JSON:\n{serialized_findings}\n\n"
             "If findings are provided, do not claim the review is clean and do not state that no issues were found. "
             "Treat hardcoded API keys, passwords, tokens, and other live credentials as Critical / Blocker. "
@@ -142,9 +203,17 @@ class LLMReasoner:
             except json.JSONDecodeError:
                 return None
 
-    def _deterministic_fallback(self, findings: list[dict[str, Any]], historical_context: str) -> dict[str, Any]:
+    def _deterministic_fallback(
+        self,
+        findings: list[dict[str, Any]],
+        historical_context: str,
+        business_summary: dict[str, Any] | None = None,
+        requirement_mappings: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
         if not findings:
             summary = "No major issues found. The code passes deterministic checks and has no obvious high-risk patterns."
+            if business_summary and business_summary.get("title"):
+                summary = f"{summary} Aligns with requirement '{business_summary.get('title')}'."
             if historical_context:
                 summary = f"{summary} Prior history has similar recommendations to keep current safeguards in place."
             return {
@@ -169,6 +238,15 @@ class LLMReasoner:
                 f"Line {finding.get('line', 1)}\n{message} PR Blocking: {blocking}."
             )
 
+        if requirement_mappings:
+            misaligned = [m for m in requirement_mappings if m.get("status") in {"VULNERABLE", "MISSING", "MISALIGNED"}]
+            for m in misaligned[:2]:
+                remed = m.get("remediation") or "Update code to fulfill requirement."
+                recommendations.append(
+                    f"### **[Business Requirement Gap] ({m.get('status')})** {m.get('title')}\n"
+                    f"{m.get('evidence')} Remediation: {remed}"
+                )
+
         has_biz_flaws = any(f.get("category") == "business_logic" or str(f.get("rule_id", "")).startswith("BIZ") for f in findings)
         if has_biz_flaws:
             summary = (
@@ -182,6 +260,9 @@ class LLMReasoner:
                 "The highest-priority items are related to unsafe execution, secret handling, and code quality gates. "
                 "A fix plan should be required before closing the review."
             )
+        if business_summary and business_summary.get("title"):
+            summary += f" Evaluated against business requirement '{business_summary.get('title')}'."
+
         if historical_context:
             recommendations.append("Leverage similar historical fixes from prior reviews to speed remediation.")
 

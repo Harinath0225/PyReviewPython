@@ -322,20 +322,47 @@ curl -X POST http://localhost:8000/api/v1/review/story \
   -d '{"title":"Remove unsafe subprocess call","summary":"replace shell execution with a constrained API","findings":[{"rule_id":"SEC001","line":4,"severity":"critical"}]}'
 ```
 
-## Intermediate developer estimate
+### Business Requirement & Jira Screenshot Mapping Subagent
 
-For a production-ready version of this work, estimate **3-5 developer days**: 1 day for GitHub API integration tests and pagination/error handling, 1 day for Model Armor/provider validation, 1-2 days for scorecard calibration and OWASP tool tests, and 0.5-1 day for Jira/business-document integration and documentation. The current implementation is a working local baseline; network credentials, CI tests, and product-specific scoring calibration remain required before release.
+The orchestrator includes a dedicated `BusinessRequirementSubagent` that ingests BRDs, Jira user stories, acceptance criteria, or Jira screenshots (as base64 data URLs, image files, or text), summarizes the business intent, and maps each requirement directly to the codebase AST in a traceability matrix.
+
+Direct business-to-code mapping endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/review/business-mapping \
+  -H "Content-Type: application/json" \
+  -d '{
+    "business_document": "Feature: Returns\nRequirement 1: Refund the item purchase price based on proportional discount attribution.",
+    "code_snippet": "class Order:\n    def refund_item(self, item_id):\n        return item.effective_paid_price"
+  }'
+```
+
+Or provide a base64 Jira ticket screenshot via `screenshot` / `business_screenshot`:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/review/business-mapping \
+  -H "Content-Type: application/json" \
+  -d '{
+    "screenshot": "data:image/png;base64,...",
+    "code_snippet": "class Order:\n    ..."
+  }'
+```
 
 ## Response contract
 
-The response includes:
+The review response includes:
 
 - `review_id`
 - `summary`
 - `total_findings`
 - `findings[]` with `line`, `severity`, `rule_id`, `message`, `recommendation`
+- `business_summary` (Title, executive summary, user stories count, acceptance criteria, business rules, detected flaws)
+- `business_requirements[]` (Individual extracted requirements with IDs and types)
+- `requirement_mappings[]` (Traceability matrix: requirement ID, title, status `COVERED`/`PARTIALLY_COVERED`/`MISSING`/`MISALIGNED`/`VULNERABLE`, mapped symbols, line numbers, evidence, gap analysis, and code remediation)
+- `business_coverage_score` (Overall percentage score)
+- `business_logic_findings[]`
 - `owasp_context`
-- `dag_events[]`
+- `dag_events[]` (Real-time DAG stream including `business_subagent` lifecycle milestones)
 - `memory`
 
 ## Frontend sample output

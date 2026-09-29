@@ -1,6 +1,115 @@
 {
   "eval_set_id": "eval_set_1",
-  "name": "eval_set_1",
-  "eval_cases": [],
-  "creation_timestamp": 1789039140.1974823
+  "name": "code_review_test_suite",
+  "creation_timestamp": 1789039140.0,
+  "eval_cases": [
+    {
+      "eval_id": "eval_sql_injection_defense",
+      "conversation": [
+        {
+          "invocation_id": "inv_sqli_001",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Review this function for security vulnerabilities and provide a safe refactoring:\n\nimport sqlite3\n\ndef get_user_by_id(db_path, user_id):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    query = f\"SELECT id, username, email FROM users WHERE user_id = '{user_id}'\"\n    cursor.execute(query)\n    return cursor.fetchone()"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "### Security Vulnerability: SQL Injection (OWASP A03:2021)\nThe function constructs SQL queries by directly interpolating untrusted input `user_id` using an f-string, allowing attackers to manipulate queries via SQL injection.\n\n### Suggested Defensive Fix:\nUse parameterized queries where query parameters are passed separately to the database engine:\n\n```python\nimport sqlite3\n\ndef get_user_by_id(db_path: str, user_id: str):\n    with sqlite3.connect(db_path) as conn:\n        cursor = conn.cursor()\n        query = \"SELECT id, username, email FROM users WHERE user_id = ?\"\n        cursor.execute(query, (user_id,))\n        return cursor.fetchone()\n```"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "scan_python_code",
+                "args": {
+                  "code_snippet": "import sqlite3\n\ndef get_user_by_id(db_path, user_id):\n    conn = sqlite3.connect(db_path)\n    cursor = conn.cursor()\n    query = f\"SELECT id, username, email FROM users WHERE user_id = '{user_id}'\"\n    cursor.execute(query)\n    return cursor.fetchone()"
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          }
+        }
+      ]
+    },
+    {
+      "eval_id": "eval_command_injection_defense",
+      "conversation": [
+        {
+          "invocation_id": "inv_cmdi_002",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Review this network ping handler and suggest a fix:\n\nimport subprocess\n\ndef ping_host(target_host):\n    cmd = f\"ping -c 1 {target_host}\"\n    return subprocess.call(cmd, shell=True)"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "### Security Vulnerability: Command Injection (CWE-78 / OWASP A03:2021)\nExecuting external processes with `shell=True` and string formatting allows command injection if `target_host` contains shell metacharacters like `;`, `&`, or `|`.\n\n### Suggested Defensive Fix:\nPass arguments as an argument list and ensure `shell=False`:\n\n```python\nimport subprocess\n\ndef ping_host(target_host: str) -> int:\n    return subprocess.run(\n        [\"ping\", \"-c\", \"1\", target_host],\n        shell=False,\n        check=False,\n        capture_output=True,\n    ).returncode\n```"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "scan_python_code",
+                "args": {
+                  "code_snippet": "import subprocess\n\ndef ping_host(target_host):\n    cmd = f\"ping -c 1 {target_host}\"\n    return subprocess.call(cmd, shell=True)"
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          }
+        }
+      ]
+    },
+    {
+      "eval_id": "eval_business_requirement_traceability",
+      "conversation": [
+        {
+          "invocation_id": "inv_biz_003",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "Review this code against business requirement BRD-DISC-01:\nBRD Requirement: When an order with a bundled $20 discount is partially refunded, proportional discount clawback must be applied to prevent exploiting bundle savings.\n\nCode:\ndef calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "### Business Logic Flaw: Bundle Discount Exploitation\nThe partial refund logic refunds the full list price without attributing the bundled discount, violating BRD-DISC-01.\n\n### Suggested Defensive Fix:\nAttribute proportional discount clawback based on order value:\n\n```python\ndef calculate_refund(items: list[dict], return_id: str, discount: float = 20.0) -> dict:\n    total_order = sum(item['price'] for item in items)\n    for item in items:\n        if item['id'] == return_id:\n            share = (item['price'] / total_order) * discount if total_order > 0 else 0\n            return {\n                'refund': round(max(0.0, item['price'] - share), 2),\n                'clawback': round(share, 2),\n                'status': 'ok'\n            }\n    return {'status': 'not_found'}\n```"
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "scan_python_code",
+                "args": {
+                  "code_snippet": "def calculate_refund(items, return_id, discount=20.0):\n    for item in items:\n        if item['id'] == return_id:\n            return {'refund': item['price'], 'status': 'ok'}\n    return {'status': 'not_found'}"
+                }
+              }
+            ],
+            "tool_responses": [],
+            "intermediate_responses": []
+          }
+        }
+      ]
+    }
+  ]
 }

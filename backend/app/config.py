@@ -1,5 +1,8 @@
 from functools import lru_cache
+import os
+from typing import Self
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,7 +14,9 @@ class Settings(BaseSettings):
     github_token: str | None = None
     gemini_api_key: str | None = None
     llm_provider: str = "gemini"
-    llm_model: str = "gemini-3.6-flash"
+    llm_model: str = "gemma-4-26b-a4b-it"
+    diagram_llm_model: str = "gemini-3.1-flash-lite"
+    vision_llm_model: str = "gemini-3.1-flash-lite"
     prompt_guard_enabled: bool = False
     prompt_guard_min_match_hits: int = 1
     prompt_guard_block_on_error: bool = False
@@ -22,6 +27,27 @@ class Settings(BaseSettings):
     max_keepalive_connections: int = 20
     max_connections: int = 100
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+
+    @model_validator(mode="after")
+    def resolve_model_aliases(self) -> Self:
+        diagram_env = (
+            os.getenv("DIAGRAM_LLM_MODEL")
+            or os.getenv("MERMAID_LLM_MODEL")
+            or os.getenv("DIAGRAM_MODEL")
+            or os.getenv("MERMAID_MODEL")
+        )
+        if diagram_env:
+            self.diagram_llm_model = diagram_env
+
+        gemma_env = os.getenv("GEMMA_MODEL")
+        if gemma_env and not os.getenv("LLM_MODEL"):
+            self.llm_model = gemma_env
+
+        vision_env = os.getenv("VISION_LLM_MODEL") or os.getenv("VISION_MODEL")
+        if vision_env:
+            self.vision_llm_model = vision_env
+
+        return self
 
 
 @lru_cache

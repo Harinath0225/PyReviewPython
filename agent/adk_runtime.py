@@ -12,7 +12,7 @@ from agent.code_review_orchestrator import CodeReviewOrchestrator
 class ADKRuntime:
     project_id: str | None = None
     location: str = "us-central1"
-    model_name: str = "gemini-3.6-flash"
+    model_name: str | None = None
     orchestrator: CodeReviewOrchestrator | None = None
     _agent: adk.Agent | None = field(default=None, init=False, repr=False)
 
@@ -20,10 +20,14 @@ class ADKRuntime:
         if self._agent is not None:
             return
 
+        from backend.app.config import get_settings
+        settings = get_settings()
+        m_name = self.model_name or settings.llm_model or "gemma-4-26b-a4b-it"
+
         self._agent = adk.Agent(
             name="code_review_agent",
             description="Agentic code review engine for Python repositories and snippets.",
-            model=self.model_name,
+            model=m_name,
             instruction=(
                 "Review Python code using deterministic checks first. "
                 "Use AST and Ruff findings, then reason about OWASP Top 10 risks, "

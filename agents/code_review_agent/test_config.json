@@ -1,0 +1,43 @@
+{
+  "criteria": {
+    "tool_trajectory_avg_score": 1.0,
+    "response_match_score": 0.35,
+    "bleu_score": 0.30,
+    "meteor_score": 0.40,
+    "latency_score": 0.80,
+    "tokens_consumed_score": 0.80,
+    "llm_judge_score": 0.60
+  },
+  "custom_metrics": {
+    "bleu_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_bleu"
+      },
+      "description": "Bilingual Evaluation Understudy (BLEU) score measuring n-gram precision against golden reference remediation."
+    },
+    "meteor_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_meteor"
+      },
+      "description": "METEOR score evaluating unigram precision, recall harmonic mean, and fragmentation penalty."
+    },
+    "latency_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_latency"
+      },
+      "description": "Tracks turn latency and validates response time against SLA threshold (<= 12.0s)."
+    },
+    "tokens_consumed_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_tokens"
+      },
+      "description": "Tracks prompt, intermediate tool call, and completion token consumption against budget."
+    },
+    "llm_judge_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_llm_judge"
+      },
+      "description": "LLM as Judge multi-criteria evaluator scoring security remediation, defensive AST compliance, and business rule coverage."
+    }
+  }
+}

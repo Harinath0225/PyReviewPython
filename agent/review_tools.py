@@ -593,6 +593,12 @@ def run_ruff_scan(file_path: str | os.PathLike[str]) -> list[dict[str, Any]]:
     if not os.path.exists(path):
         return []
 
+    try:
+        source_code = Path(path).read_text(encoding="utf-8")
+        source_lines = source_code.splitlines()
+    except OSError:
+        source_lines = []
+
     result: list[dict[str, Any]] = []
     try:
         completed = subprocess.run(
@@ -605,7 +611,7 @@ def run_ruff_scan(file_path: str | os.PathLike[str]) -> list[dict[str, Any]]:
             try:
                 payload = json.loads(completed.stdout or "[]")
                 for item in payload:
-                    result.append({
+                    finding = {
                         "line": int(item.get("location", {}).get("row", 1)),
                         "severity": _normalize_severity(item.get("severity"), item.get("code"), item.get("message")),
                         "rule_id": item.get("code", "RUF"),
@@ -613,7 +619,32 @@ def run_ruff_scan(file_path: str | os.PathLike[str]) -> list[dict[str, Any]]:
                         "message": item.get("message", "Lint issue"),
                         "recommendation": "Fix the issue reported by Ruff to keep the codebase consistent and secure.",
                         "evidence": item.get("filename", path),
-                    })
+                    }
+                    
+                    fix = item.get("fix")
+                    if fix:
+                        if fix.get("message"):
+                            finding["recommendation"] = fix["message"]
+                        edits = fix.get("edits", [])
+                        if edits and source_lines:
+                            edit = edits[0]
+                            loc = edit.get("location", {})
+                            end_loc = edit.get("end_location", {})
+                            content = edit.get("content", "")
+                            
+                            row, col = loc.get("row"), loc.get("column")
+                            end_row, end_col = end_loc.get("row"), end_loc.get("column")
+                            
+                            if row and col and end_row and end_col and 1 <= row <= len(source_lines) and 1 <= end_row <= len(source_lines):
+                                if row == end_row:
+                                    orig_line = source_lines[row - 1]
+                                    finding["replacement"] = orig_line[:col - 1] + content + orig_line[end_col - 1:]
+                                else:
+                                    lines_before = source_lines[row - 1][:col - 1]
+                                    lines_after = source_lines[end_row - 1][end_col - 1:]
+                                    finding["replacement"] = lines_before + content + lines_after
+
+                    result.append(finding)
             except json.JSONDecodeError:
                 pass
     except FileNotFoundError:
