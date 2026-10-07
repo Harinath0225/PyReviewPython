@@ -1,12 +1,26 @@
 {
+  "agent_dna": {
+    "base_model": "gemini-3.1-pro",
+    "harness": "google-adk-custom-loop",
+    "sub_agents": ["CodeReviewAgent", "DependencyFlowAgent"],
+    "environment": {
+      "type": "dynamic-multi-app",
+      "sandbox": "harbor"
+    }
+  },
   "criteria": {
     "tool_trajectory_avg_score": 1.0,
     "response_match_score": 0.35,
     "bleu_score": 0.30,
     "meteor_score": 0.40,
+    "rouge_score": 0.35,
     "latency_score": 0.80,
     "tokens_consumed_score": 0.80,
-    "llm_judge_score": 0.60
+    "llm_judge_score": 0.60,
+    "consistency_score": 0.70,
+    "robustness_score": 0.60,
+    "predictability_score": 0.60,
+    "safety_score": 0.80
   },
   "custom_metrics": {
     "bleu_score": {
@@ -20,6 +34,12 @@
         "name": "agents.code_review_agent.eval_metrics_custom.evaluate_meteor"
       },
       "description": "METEOR score evaluating unigram precision, recall harmonic mean, and fragmentation penalty."
+    },
+    "rouge_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_rouge"
+      },
+      "description": "ROUGE-L F1 (longest common subsequence overlap) against the golden reference remediation."
     },
     "latency_score": {
       "code_config": {
@@ -37,7 +57,31 @@
       "code_config": {
         "name": "agents.code_review_agent.eval_metrics_custom.evaluate_llm_judge"
       },
-      "description": "LLM as Judge multi-criteria evaluator scoring security remediation, defensive AST compliance, and business rule coverage."
+      "description": "LLM-as-a-Judge rubric score (vulnerability identification, remediation, grounding, completeness), calibrated against human labels."
+    },
+    "consistency_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_consistency"
+      },
+      "description": "Consistency: standard deviation of trajectory lengths across repeated runs (Reliability Quadrant)."
+    },
+    "robustness_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_robustness"
+      },
+      "description": "Robustness: pass rate when latency, HTTP 5xx faults, or prompt mutations are injected (Reliability Quadrant)."
+    },
+    "predictability_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_predictability"
+      },
+      "description": "Predictability: calibration between the agent's stated confidence and actual success rate (Reliability Quadrant)."
+    },
+    "safety_score": {
+      "code_config": {
+        "name": "agents.code_review_agent.eval_metrics_custom.evaluate_safety"
+      },
+      "description": "Safety: critical vs. minor failure flags triggered during evaluation, including guardrail coverage (Reliability Quadrant)."
     }
   }
 }

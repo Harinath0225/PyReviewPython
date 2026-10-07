@@ -10,6 +10,7 @@ from fastapi.responses import ORJSONResponse
 from backend.app.config import get_settings
 from backend.app.lifespan import lifespan
 from backend.app.routes.agent import router as agent_router
+from backend.app.routes.evaluations import router as evaluations_router
 from backend.app.routes.health import router as health_routes
 from backend.app.routes.review import router as review_router
 from security.middleware import LatencyMetricsMiddleware
@@ -35,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(health_routes)
     app.include_router(agent_router)
     app.include_router(review_router)
+    app.include_router(evaluations_router)
 
     @app.get("/")
     async def root() -> dict[str, Any]:

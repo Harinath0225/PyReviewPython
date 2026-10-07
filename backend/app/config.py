@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     llm_model: str = "gemma-4-26b-a4b-it"
     diagram_llm_model: str = "gemini-3.1-flash-lite"
     vision_llm_model: str = "gemini-3.1-flash-lite"
+    # auto = LLM when an API key is configured, else heuristic; llm / heuristic force one.
+    llm_judge_mode: str = "auto"
+    # Empty means reuse diagram_llm_model, which differs from the agent under test (llm_model).
+    judge_llm_model: str = ""
     prompt_guard_enabled: bool = False
     prompt_guard_min_match_hits: int = 1
     prompt_guard_block_on_error: bool = False

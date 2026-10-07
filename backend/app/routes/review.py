@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -9,6 +10,8 @@ from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconn
 
 from agent.adk_runtime import ADKRuntime
 from agent.code_review_orchestrator import CodeReviewOrchestrator
+from agent.evaluation_history_store import get_evaluation_history_store
+from agent.evaluation_ingest import record_review_run
 from agent.github_pr_review_service import GitHubPRReviewRequest, GitHubPRReviewService
 from agent.github_url_resolver import resolve_github_url_async
 from agent.recommendation_history_store import get_recommendation_history_store
@@ -17,6 +20,27 @@ from agent.review_event_broadcaster import review_event_broadcaster
 
 router = APIRouter(prefix="/api/v1")
 _review_tasks: dict[str, asyncio.Task[None]] = {}
+
+
+def _record_review_on_scorecard(
+    review_id: str,
+    result: dict[str, Any] | None,
+    *,
+    repo_path: str | None,
+    target_url: str | None,
+    started: float,
+    business_documents: list[dict[str, Any]] | None,
+    error: str | None = None,
+) -> None:
+    record_review_run(
+        get_evaluation_history_store(),
+        review_id=review_id,
+        result=result,
+        mode="repo" if repo_path else "github" if target_url else "snippet",
+        duration_ms=(time.perf_counter() - started) * 1000,
+        error=error,
+        has_business_documents=bool(business_documents),
+    )
 
 
 class ReviewRequest:
@@ -56,6 +80,7 @@ async def review_code(payload: dict[str, Any]) -> dict[str, object]:
     review_id = f"review-{uuid.uuid4().hex}"
     review_event_broadcaster.create(review_id, asyncio.get_running_loop())
     await review_event_broadcaster.set_status(review_id, "started")
+    started = time.perf_counter()
     try:
         runtime = ADKRuntime(orchestrator=CodeReviewOrchestrator(llm_model=llm_model, diagram_model=diagram_model))
         result = await asyncio.to_thread(
@@ -70,9 +95,17 @@ async def review_code(payload: dict[str, Any]) -> dict[str, object]:
         )
         await _execute_pr_review_if_github_url(target_url, review_id, result)
         await review_event_broadcaster.set_status(review_id, "completed", result=result)
+        _record_review_on_scorecard(
+            review_id, result, repo_path=repo_path, target_url=target_url,
+            started=started, business_documents=business_documents,
+        )
         return result
     except Exception as exc:
         await review_event_broadcaster.set_status(review_id, "failed", error=str(exc))
+        _record_review_on_scorecard(
+            review_id, None, repo_path=repo_path, target_url=target_url,
+            started=started, business_documents=business_documents, error=str(exc),
+        )
         raise HTTPException(status_code=500, detail="Review processing failed.") from exc
 
 
@@ -209,6 +242,7 @@ async def _run_review(
     diagram_model: str | None = None,
 ) -> None:
     await review_event_broadcaster.set_status(review_id, "started")
+    started = time.perf_counter()
     try:
         runtime = ADKRuntime(orchestrator=CodeReviewOrchestrator(llm_model=llm_model, diagram_model=diagram_model))
         result = await asyncio.to_thread(
@@ -223,8 +257,16 @@ async def _run_review(
         )
         await _execute_pr_review_if_github_url(target_url, review_id, result)
         await review_event_broadcaster.set_status(review_id, "completed", result=result)
+        _record_review_on_scorecard(
+            review_id, result, repo_path=repo_path, target_url=target_url,
+            started=started, business_documents=business_documents,
+        )
     except Exception as exc:
         await review_event_broadcaster.set_status(review_id, "failed", error=str(exc))
+        _record_review_on_scorecard(
+            review_id, None, repo_path=repo_path, target_url=target_url,
+            started=started, business_documents=business_documents, error=str(exc),
+        )
 
 
 @router.get("/review/history")

@@ -1,0 +1,111 @@
+{
+  "description": "Human-labelled answers used to calibrate the LLM judge. human_score is 1 (wrong) to 5 (excellent).",
+  "pass_human_score": 4,
+  "examples": [
+    {
+      "id": "sql_strong", "scenario": "sql_injection", "human_score": 5,
+      "task": "Review this function for security vulnerabilities and provide a safe refactoring.",
+      "code": "def get_user(db, user_id):\n    cursor = db.cursor()\n    cursor.execute(f\"SELECT * FROM users WHERE id = '{user_id}'\")\n    return cursor.fetchone()",
+      "reference": "SQL injection (OWASP A03:2021): the query interpolates untrusted user_id into SQL. Use a parameterized query: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,)) and validate the input type.",
+      "response": "SQL injection (OWASP A03): user_id is interpolated into the query with an f-string, so an attacker can alter the SQL. Fix it with a parameterized query: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,)) and validate that user_id is an integer."
+    },
+    {
+      "id": "sql_partial", "scenario": "sql_injection", "human_score": 3,
+      "task": "Review this function for security vulnerabilities and provide a safe refactoring.",
+      "code": "def get_user(db, user_id):\n    cursor = db.cursor()\n    cursor.execute(f\"SELECT * FROM users WHERE id = '{user_id}'\")\n    return cursor.fetchone()",
+      "reference": "SQL injection (OWASP A03:2021): the query interpolates untrusted user_id into SQL. Use a parameterized query: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,)) and validate the input type.",
+      "response": "SQL injection risk: user_id is placed directly in the query string. Escape the quotes in user_id before building the query."
+    },
+    {
+      "id": "sql_wrong", "scenario": "sql_injection", "human_score": 1,
+      "task": "Review this function for security vulnerabilities and provide a safe refactoring.",
+      "code": "def get_user(db, user_id):\n    cursor = db.cursor()\n    cursor.execute(f\"SELECT * FROM users WHERE id = '{user_id}'\")\n    return cursor.fetchone()",
+      "reference": "SQL injection (OWASP A03:2021): the query interpolates untrusted user_id into SQL. Use a parameterized query: cursor.execute('SELECT * FROM users WHERE id = ?', (user_id,)) and validate the input type.",
+      "response": "The function looks fine and is safe to ship. Consider renaming get_user to fetch_user for readability."
+    },
+    {
+      "id": "cmd_good", "scenario": "command_injection", "human_score": 4,
+      "task": "Review this network ping handler and suggest a fix.",
+      "code": "def ping_host(target_host):\n    return subprocess.call(f\"ping -c 1 {target_host}\", shell=True)",
+      "reference": "Command injection (CWE-78): shell=True with an interpolated target_host lets shell metacharacters run arbitrary commands. Use subprocess.run(['ping', '-c', '1', target_host], shell=False) and validate the host against an allowlist.",
+      "response": "Command injection: shell=True with a formatted string lets an attacker append commands using ; or |. Call subprocess.run(['ping', '-c', '1', target_host], shell=False)."
+    },
+    {
+      "id": "cmd_vague", "scenario": "command_injection", "human_score": 2,
+      "task": "Review this network ping handler and suggest a fix.",
+      "code": "def ping_host(target_host):\n    return subprocess.call(f\"ping -c 1 {target_host}\", shell=True)",
+      "reference": "Command injection (CWE-78): shell=True with an interpolated target_host lets shell metacharacters run arbitrary commands. Use subprocess.run(['ping', '-c', '1', target_host], shell=False) and validate the host against an allowlist.",
+      "response": "Running ping through the shell is risky. Maybe avoid shell commands where you can."
+    },
+    {
+      "id": "cmd_wrong", "scenario": "command_injection", "human_score": 1,
+      "task": "Review this network ping handler and suggest a fix.",
+      "code": "def ping_host(target_host):\n    return subprocess.call(f\"ping -c 1 {target_host}\", shell=True)",
+      "reference": "Command injection (CWE-78): shell=True with an interpolated target_host lets shell metacharacters run arbitrary commands. Use subprocess.run(['ping', '-c', '1', target_host], shell=False) and validate the host against an allowlist.",
+      "response": "No vulnerabilities found. Ping is a harmless command and the input is only a hostname."
+    },
+    {
+      "id": "path_strong", "scenario": "path_traversal", "human_score": 5,
+      "task": "Review this file reader for vulnerabilities and propose a fix.",
+      "code": "def read_user_file(filename):\n    path = os.path.join('/var/data', filename)\n    with open(path) as f:\n        return f.read()",
+      "reference": "Path traversal (CWE-22): os.path.join with a user-controlled filename allows ../ sequences to escape /var/data. Take os.path.basename(filename), resolve with os.path.realpath, and verify the result stays inside the base directory.",
+      "response": "Path traversal: filename is joined to /var/data without sanitization, so ../ sequences can escape the directory. Use os.path.basename(filename), resolve it with os.path.realpath and confirm the path still starts with /var/data before opening it."
+    },
+    {
+      "id": "path_partial", "scenario": "path_traversal", "human_score": 3,
+      "task": "Review this file reader for vulnerabilities and propose a fix.",
+      "code": "def read_user_file(filename):\n    path = os.path.join('/var/data', filename)\n    with open(path) as f:\n        return f.read()",
+      "reference": "Path traversal (CWE-22): os.path.join with a user-controlled filename allows ../ sequences to escape /var/data. Take os.path.basename(filename), resolve with os.path.realpath, and verify the result stays inside the base directory.",
+      "response": "Path traversal risk: the user-supplied filename can contain ../. Reject filenames that contain '..'."
+    },
+    {
+      "id": "path_wrong", "scenario": "path_traversal", "human_score": 1,
+      "task": "Review this file reader for vulnerabilities and propose a fix.",
+      "code": "def read_user_file(filename):\n    path = os.path.join('/var/data', filename)\n    with open(path) as f:\n        return f.read()",
+      "reference": "Path traversal (CWE-22): os.path.join with a user-controlled filename allows ../ sequences to escape /var/data. Take os.path.basename(filename), resolve with os.path.realpath, and verify the result stays inside the base directory.",
+      "response": "The file is opened in read mode so it cannot modify anything, which makes this safe."
+    },
+    {
+      "id": "biz_good", "scenario": "business_logic", "human_score": 4,
+      "task": "Audit the order refund logic for promo discount exploitation.",
+      "code": "class OrderService:\n    def __init__(self):\n        self.discount_applied = True\n    def refund_item(self, item):\n        return item.price",
+      "reference": "Business logic flaw (BIZ001): refund_item returns the sticker price even when an order-level discount was applied, so customers are refunded more than they paid. Refund the proportionally discounted effective paid price instead and claw back thresholds.",
+      "response": "Business logic flaw: refund_item returns item.price, the sticker price, although a discount was applied, so the refund exceeds what the customer paid. Refund the proportionally discounted price."
+    },
+    {
+      "id": "biz_vague", "scenario": "business_logic", "human_score": 2,
+      "task": "Audit the order refund logic for promo discount exploitation.",
+      "code": "class OrderService:\n    def __init__(self):\n        self.discount_applied = True\n    def refund_item(self, item):\n        return item.price",
+      "reference": "Business logic flaw (BIZ001): refund_item returns the sticker price even when an order-level discount was applied, so customers are refunded more than they paid. Refund the proportionally discounted effective paid price instead and claw back thresholds.",
+      "response": "The refund function returns a price. You may want to add type hints and a docstring to make it clearer."
+    },
+    {
+      "id": "biz_wrong", "scenario": "business_logic", "human_score": 1,
+      "task": "Audit the order refund logic for promo discount exploitation.",
+      "code": "class OrderService:\n    def __init__(self):\n        self.discount_applied = True\n    def refund_item(self, item):\n        return item.price",
+      "reference": "Business logic flaw (BIZ001): refund_item returns the sticker price even when an order-level discount was applied, so customers are refunded more than they paid. Refund the proportionally discounted effective paid price instead and claw back thresholds.",
+      "response": "SQL injection risk in the refund query. Use parameterized queries to fix it."
+    },
+    {
+      "id": "clean_strong", "scenario": "clean_code", "human_score": 5,
+      "task": "Review this clean database query that uses a context manager and bound parameters.",
+      "code": "def get_user_secure(user_id: int) -> list:\n    with sqlite3.connect('users.db') as conn:\n        cursor = conn.cursor()\n        cursor.execute('SELECT id, name FROM users WHERE id = ?', (user_id,))\n        return cursor.fetchall()",
+      "reference": "The code is secure: it uses a context manager and a bound parameter, so there is no SQL injection and no vulnerability to fix.",
+      "response": "No vulnerabilities found. The query uses a bound parameter (id = ?), so SQL injection is prevented, and the context manager closes the connection."
+    },
+    {
+      "id": "clean_hedged", "scenario": "clean_code", "human_score": 3,
+      "task": "Review this clean database query that uses a context manager and bound parameters.",
+      "code": "def get_user_secure(user_id: int) -> list:\n    with sqlite3.connect('users.db') as conn:\n        cursor = conn.cursor()\n        cursor.execute('SELECT id, name FROM users WHERE id = ?', (user_id,))\n        return cursor.fetchall()",
+      "reference": "The code is secure: it uses a context manager and a bound parameter, so there is no SQL injection and no vulnerability to fix.",
+      "response": "The code looks mostly fine. Double-check that user_id is validated somewhere else in the application."
+    },
+    {
+      "id": "clean_false_positive", "scenario": "clean_code", "human_score": 1,
+      "task": "Review this clean database query that uses a context manager and bound parameters.",
+      "code": "def get_user_secure(user_id: int) -> list:\n    with sqlite3.connect('users.db') as conn:\n        cursor = conn.cursor()\n        cursor.execute('SELECT id, name FROM users WHERE id = ?', (user_id,))\n        return cursor.fetchall()",
+      "reference": "The code is secure: it uses a context manager and a bound parameter, so there is no SQL injection and no vulnerability to fix.",
+      "response": "Critical SQL injection vulnerability: the query can be exploited through user_id. Rewrite it using string formatting."
+    }
+  ]
+}

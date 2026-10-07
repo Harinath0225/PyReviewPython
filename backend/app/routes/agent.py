@@ -1,7 +1,10 @@
+import asyncio
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from agent.manager import AgentManager
-from agent.evaluation import AgentEvaluationService
+from agent.evaluation import ADK_EVAL_SCENARIOS, AgentEvaluationService
+from agent.evaluation_history_store import get_evaluation_history_store
 from security.auth import require_api_key
 from security.model_armor import ModelArmorService
 from security.prompt_injection_guard import get_prompt_injection_guard_service
@@ -58,23 +61,40 @@ async def evaluate_agent(payload: dict[str, object]) -> dict[str, object]:
     expected_tools = payload.get("expected_tools")
     scenario_id = payload.get("scenario_id")
     expected_rules = payload.get("expected_rules")
+    noise_config = payload.get("noise_config")
+    run_judge = payload.get("run_judge", True)
 
     if not prompt.strip():
         raise HTTPException(status_code=400, detail="prompt is required")
     if not isinstance(expected_keywords, list):
         raise HTTPException(status_code=400, detail="expected_keywords must be a list")
+    if noise_config is not None and not isinstance(noise_config, dict):
+        raise HTTPException(status_code=400, detail="noise_config must be an object")
+    if not isinstance(run_judge, bool):
+        raise HTTPException(status_code=400, detail="run_judge must be a boolean")
 
     parsed_tools = [str(item) for item in expected_tools] if isinstance(expected_tools, list) else None
     parsed_rules = [str(item) for item in expected_rules] if isinstance(expected_rules, list) else None
 
-    return AgentEvaluationService().evaluate(
+    # The judge can call an LLM, so keep the event loop free while it runs.
+    result = await asyncio.to_thread(
+        AgentEvaluationService().evaluate,
         prompt=prompt,
         code_snippet=code_snippet,
         expected_keywords=[str(item) for item in expected_keywords],
         expected_tools=parsed_tools,
         scenario_id=str(scenario_id) if scenario_id else None,
         expected_rules=parsed_rules,
+        noise_config=noise_config if isinstance(noise_config, dict) else None,
+        run_judge=run_judge,
     )
+
+    # Persist the run so the Agent Scorecard can aggregate it.
+    matched = next((s for s in ADK_EVAL_SCENARIOS if s["id"] == scenario_id), None)
+    get_evaluation_history_store().record_run(
+        result, scenario_name=matched.get("name") if matched else None
+    )
+    return result
 
 
 
